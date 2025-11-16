@@ -1,0 +1,13 @@
+log4j2:
+  configurationFile: log4j2.xml
+  status: info
+  monitorInterval: 30
+  properties:
+    property:
+      name: log.path
+      value: logs
+      - name: log.file.name
+        value: application.log
+      - name: log.file.path
+        value: ${log.path}/${log.file.name}
+  

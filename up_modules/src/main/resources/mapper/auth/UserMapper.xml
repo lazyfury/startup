@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="io.sf.modules.auth.mapper.UserMapper">
+
+    <!-- 根据用户名查询用户；请根据实际表名和字段调整 -->
+    <select id="getUserByUsername" parameterType="string" resultType="io.sf.modules.auth.entity.User">
+        SELECT *
+        FROM user
+        WHERE username = #{username}
+        LIMIT 1
+    </select>
+
+    <!-- 注册用户，字段与实体 User 保持一致 -->
+    <insert id="insertUser" parameterType="io.sf.modules.auth.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (username, password, enabled, created_at, updated_at)
+        VALUES (#{username}, #{password}, #{enabled}, NOW(), NOW())
+    </insert>
+
+</mapper>

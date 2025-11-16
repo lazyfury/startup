@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html th:replace="layout/layout :: layout(~{::main},'我的信息')" th:lang="${site.lang}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>我的信息</title>
+</head>
+<body>
+<div class="container" th:fragment="main">  
+  <div class="bg-white rounded-1 shadow-sm p-4">
+    <div class="title-2 mb-2">我的信息</div>
+    <p class="text-gray-600 mb-2">展示当前登录用户或由令牌解析得到的用户信息。</p>
+
+    <div th:if="${error}">
+      <div class="msg error" th:text="${error}"></div>
+    </div>
+
+    <div th:if="${user}" th:object="${user}">
+      <div class="flex gap-2 items-center mb-1">
+        <span class="text-gray-600">用户名</span>
+        <span th:if="${user.username}" th:text="${user.username}">username</span>
+      </div>
+    </div>
+    <div class="mt-2 space-x-2">
+      <a href="/" class="link">首页</a>
+      <a href="/login" class="link">登录</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

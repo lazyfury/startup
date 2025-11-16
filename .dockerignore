@@ -1,0 +1,16 @@
+# Reduce Docker build context size
+.git/
+.idea/
+target/
+**/target/
+**/build/
+**/.mvn/
+**/.vscode/
+**/*.iml
+**/*.iws
+**/*.ipr
+node_modules/
+Dockerfile*
+docker-compose*.yml
+README.md
+HELP.md

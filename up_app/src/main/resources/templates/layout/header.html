@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="header(title)">
+  <header class="bg-gray-100">
+    <div class="content-width px-2 py-3 flex justify-between items-center">
+      <a href="/" class="no-underline text-gray-900 font-bold">认证系统</a>
+      <nav class="flex gap-3">
+        <a class="link" href="/">首页</a>
+        <a th:if="${isAnonymous}" class="link" href="/login">登录</a>
+        <a th:if="${isAnonymous}" class="link" href="/register">注册</a>
+        <a th:if="${not isAnonymous}" class="link" href="/profile"> 
+          <span th:text="${principal.username}"></span>
+        </a>
+        <a th:if="${not isAnonymous}" class="link" href="/logout">注销</a>
+      </nav>
+    </div>
+  </header>
+  </div>

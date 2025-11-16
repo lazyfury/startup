@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html th:replace="layout/layout :: layout(~{::main},'登录')" th:lang="${site.lang}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    <link rel="icon" href="data:,">
+</head>
+<body>
+<div class="container" th:fragment="main">    
+  <div class="flex flex-col items-center"> 
+    <div class="bg-white rounded-1 shadow-sm p-4 w-600px m-4 mx-auto">
+    <div class="title-2 mb-2">登录</div>
+
+    <!-- Spring Security 默认使用表单字段名 username/password -->
+    <form action="/login" method="post" class="space-y-2">
+      <label for="username" class="block text-sm text-gray-700">用户名</label>
+      <input id="username" name="username" type="text" required autocomplete="username" class="block w-full border border-gray-300 rounded-1 px-2 py-1" />
+      <label for="password" class="block text-sm text-gray-700">密码</label>
+      <input id="password" name="password" type="password" required autocomplete="current-password" class="block w-full border border-gray-300 rounded-1 px-2 py-1" />
+
+      <div class="flex items-center justify-between">
+        <div class="flex items-center">
+          <input id="remember-me" name="remember-me" type="checkbox" class="mr-2" />
+          <label for="remember-me" class="text-sm text-gray-700">记住我</label>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary">登录</button>
+      <div class="text-red-600 text-sm" th:if="${session.loginError}" th:text="${session.loginError}"></div>
+      <div class="text-green-600 text-sm" th:if="${param.logout}" th:text="'您已退出登录'"></div>
+    </form>
+  </div>
+  <div class="text-gray-600 mt-2">没有账号？请先注册后登录。</div>
+  <div class="mt-1"><a href="/register" class="link">注册</a> · <a href="/" class="link">首页</a></div>
+  </div>
+</div>
+</body>
+</html>

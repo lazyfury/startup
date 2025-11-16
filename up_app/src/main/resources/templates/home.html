@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN" th:replace="~{layout/layout :: layout(~{::main},'首页')}" xmlns:th="http://www.thymeleaf.org">
+
+<body>
+  <div th:fragment="main" class="min-h-[calc(100vh-130px)]">
+
+    <section class="bg-gray-200 p-4 mb-3">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-3">
+        <div>
+          <h1 class="text-3xl font-bold mb-2">认证系统</h1>
+          <p class="text-gray-500 mb-0">基于 Spring Security 和 JWT 的用户认证平台</p>
+        </div>
+        <div class="flex gap-2" th:if="${result.isAnonymous}">
+          <a href="/login" class="btn btn-primary">登录</a>
+          <a href="/register" class="btn btn-outline btn-secondary">注册</a>
+          <a href="/swagger-ui.html" class="btn btn-outline btn-primary">API 文档</a>
+        </div>
+        <div th:if="${not result.isAnonymous}">
+          <p>
+            欢迎，
+            <span th:text="${result.user.username}"></span>
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+      <div>
+        <div class="card bg-base-100">
+          <div class="card-body">
+            <div class="title-2 mb-1">快速开始</div>
+            <div class="mb-2">
+              <p class="text-gray-500">使用账号登录后即可访问受保护资源。</p>
+            </div>
+            <a href="/login" class="btn btn-primary">开始登录</a>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card bg-base-100">
+          <div class="card-body">
+            <div class="title-2 mb-1">开发者入口</div>
+            <div class="mb-2">
+              <p class="text-gray-500">查看 API 文档，集成认证与授权流程。</p>
+            </div>
+            <a href="/swagger-ui.html" class="btn btn-outline">打开文档</a>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card bg-base-100">
+          <div class="card-body">
+            <div class="title-2 mb-1">个人中心</div>
+            <div class="mb-2">
+              <p class="text-gray-500">查看个人信息与令牌状态。</p>
+            </div>
+            <a href="/profile" class="btn btn-outline btn-secondary"
+              th:if="${authentication} and ${authentication.authenticated}">进入</a>
+            <span class="btn btn-disabled" th:unless="${authentication} and ${authentication.authenticated}">请先登录</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div>
+        <div class="card bg-base-100">
+          <div class="card-body">
+            <div class="title-2 mb-2">公告</div>
+            <ul class="space-y-1">
+              <li class="bg-base-200 rounded-1 px-2 py-1">系统维护窗口占位</li>
+              <li class="bg-base-200 rounded-1 px-2 py-1">新功能发布占位</li>
+              <li class="bg-base-200 rounded-1 px-2 py-1">安全更新占位</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="card bg-base-100">
+          <div class="card-body">
+            <div class="title-2 mb-2">统计</div>
+            <div class="flex gap-3">
+              <div class="p-3 bg-base-200 rounded-1 text-center flex-1">
+                <div class="text-3xl">0</div>
+                <div class="text-gray-500">今日登录</div>
+              </div>
+              <div class="p-3 bg-base-200 rounded-1 text-center flex-1">
+                <div class="text-3xl">0</div>
+                <div class="text-gray-500">注册用户</div>
+              </div>
+              <div class="p-3 bg-base-200 rounded-1 text-center flex-1">
+                <div class="text-3xl">0</div>
+                <div class="text-gray-500">API 请求</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    
+    </section>
+
+  </div>
+</body>
+
+</html>
