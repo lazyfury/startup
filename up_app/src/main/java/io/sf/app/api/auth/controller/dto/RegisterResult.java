@@ -11,4 +11,5 @@ import lombok.NoArgsConstructor;
 public class RegisterResult {
     private long userId;
     private CustomUserDetail user;
+    private String token;
 }

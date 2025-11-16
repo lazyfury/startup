@@ -10,6 +10,6 @@ public interface UserMapper {
 
    public Optional<User> getUserByUsername(String username);
 
-   public int insertUser(User user);
+   public int insertUser(User user) throws Exception;
 
 }

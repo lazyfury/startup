@@ -2,6 +2,8 @@ package io.sf.config.security;
 
 import java.util.HashMap;
 
+import io.sf.utils.response.JsonResult;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,12 +31,16 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+@Slf4j
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
     @Autowired
     private SecurityProperties securityProperties;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
 
     @Bean
@@ -104,22 +110,30 @@ public class SecurityConfig {
                         .permitAll() : AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception
                         .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            log.debug("访问被拒绝：{}", accessDeniedException.getMessage());
                             var wantJson = request.getHeader("Content-Type") != null
                                     && request.getHeader("Content-Type").contains("application/json");
                             if (wantJson) {
+                                HashMap<String,Object> extra = new HashMap<>();
+                                extra.put("ExceptionHandler", "Spring Security AccessDenied");
+                                JsonResult<String> result = new JsonResult<>(HttpServletResponse.SC_FORBIDDEN, null, "Forbidden",extra);
                                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                                 response.setContentType("application/json");
-                                response.getWriter().write("{\"error\":\"Forbidden\"}");
+                                response.getWriter().write(objectMapper.writeValueAsString(result));
                             } else {
                                 response.sendRedirect("/403");
                             }
                         }).authenticationEntryPoint((request, response, authException) -> {
+                            log.debug("未认证请求：{}", authException.getMessage());
                             var wantJson = request.getHeader("Content-Type") != null
                                     && request.getHeader("Content-Type").contains("application/json");
                             if (wantJson) {
+                                HashMap<String,Object> extra = new HashMap<>();
+                                extra.put("ExceptionHandler", "Spring Security Unauthorized");
+                                JsonResult<String> result = new JsonResult<>(HttpServletResponse.SC_UNAUTHORIZED, null, "Unauthorized");
                                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                                 response.setContentType("application/json");
-                                response.getWriter().write("{\"error\":\"Unauthorized\"}");
+                                response.getWriter().write(objectMapper.writeValueAsString(result));
                             } else {
                                 response.sendRedirect("/login");
                             }

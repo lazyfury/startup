@@ -32,7 +32,8 @@
             <div class="mb-2">
               <p class="text-gray-500">使用账号登录后即可访问受保护资源。</p>
             </div>
-            <a href="/login" class="btn btn-primary">开始登录</a>
+            <a href="/login" th:if="${isAnonymous}" class="btn btn-primary">开始登录</a>
+             <a href="/profile" th:unless="${isAnonymous}" class="btn btn-primary">个人中心</a>
           </div>
         </div>
       </div>

@@ -22,7 +22,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
-
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Tag(name = "用户管理", description = "用户相关操作")
 @Slf4j
@@ -39,9 +40,7 @@ public class UserController {
     @Autowired
     private JwtTokenService jwtTokenService;
 
-
-
-    @Operation(summary = "根据用户名获取用户信息", description = "根据用户名获取用户信息",tags = {"用户管理"})
+    @Operation(summary = "根据用户名获取用户信息", description = "根据用户名获取用户信息", tags = { "用户管理" })
     @ApiResponse(responseCode = "200", description = "成功获取用户信息")
     @GetMapping("/getByUsername")
     public HashMap<String, Object> getUserByUsername(@RequestParam("username") String username) {
@@ -57,18 +56,21 @@ public class UserController {
 
     @PostMapping("/register")
     public JsonResult<RegisterResult> registerUserPost(@RequestBody LoginRequest request) throws Exception {
-        int affectedRows = userService.registerUser(new User(null, request.getUsername(), request.getPassword(), Boolean.TRUE, 1l,null, null));
+        int affectedRows = userService.registerUser(
+                new User(null, request.getUsername(), request.getPassword(), Boolean.TRUE, 1l, null, null));
         if (affectedRows <= 0) {
             throw new Exception("注册账号错误");
         }
-        // 兼容后期验证码注册
-        User user = userService.getUserByUsername(request.getUsername()).orElse(null);
-        var authentication = authenticationProvider
-                .authenticate(new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword()));
+        User user = userService.getUserByUsername(request.getUsername()).orElseThrow();
+        Authentication authentication = null;
+        authentication = authenticationProvider
+                .authenticate(new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
         CustomUserDetail userDetail = (CustomUserDetail) authentication.getPrincipal();
-        RegisterResult result = new RegisterResult(user.getId(),userDetail);
-        return new JsonResult<RegisterResult>(200,result,"ok");
+        var token = jwtTokenService.generateToken(request.getUsername());
+        RegisterResult result = new RegisterResult(user.getId(), userDetail, token);
+        return new JsonResult<RegisterResult>(200, result, "ok");
+
     }
 
     @PostMapping("/login")
@@ -76,19 +78,25 @@ public class UserController {
             HttpServletRequest request, HttpServletResponse response,
             @RequestBody LoginRequest loginData) throws Exception {
 
-            var authentication = authenticationProvider
-                    .authenticate(new UsernamePasswordAuthenticationToken(loginData.getUsername(), loginData.getPassword()));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            CustomUserDetail user = (CustomUserDetail) authentication.getPrincipal();
-            var token = jwtTokenService.generateToken(loginData.getUsername());
-            return new JsonResult<LoginResult>(200,new LoginResult(token,user),"ok");
+        var authentication = authenticationProvider
+                .authenticate(
+                        new UsernamePasswordAuthenticationToken(loginData.getUsername(), loginData.getPassword()));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        CustomUserDetail user = (CustomUserDetail) authentication.getPrincipal();
+        var token = jwtTokenService.generateToken(loginData.getUsername());
+        return new JsonResult<LoginResult>(200, new LoginResult(token, user), "ok");
     }
 
     @GetMapping("/me")
-    public JsonResult<CustomUserDetail> profile(){
+    public JsonResult<CustomUserDetail> profile() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         CustomUserDetail user = (CustomUserDetail) auth.getPrincipal();
-        return new JsonResult<CustomUserDetail>(200,user,"");
+        return new JsonResult<CustomUserDetail>(200, user, "");
+    }
+
+    @GetMapping("/ex")
+    public String getMethodName(@RequestParam String param) throws Exception {
+        throw new Exception("测试security拦截异常");
     }
 
 }
