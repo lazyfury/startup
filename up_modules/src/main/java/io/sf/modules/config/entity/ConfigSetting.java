@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Entity
 @Check(constraints = "scope_type = 'SYSTEM' OR scope_id IS NOT NULL")
 @Table(name = "config_setting", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"key", "scope_type", "scope_id"})
+        @UniqueConstraint(columnNames = {"config_key", "scope_type", "scope_id"})
 })
 @Data
 @NoArgsConstructor
@@ -25,11 +25,11 @@ public class ConfigSetting {
     @Column(name = "id")
     private Long id;
 
-    @Column(name = "key", nullable = false, length = 128)
+    @Column(name = "config_key", nullable = false, length = 96)
     private String key;
 
     @Lob
-    @Column(name = "value", nullable = false)
+    @Column(name = "config_value", nullable = false)
     private String value;
 
     @Enumerated(EnumType.STRING)
