@@ -10,5 +10,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class LoginResult {
         private String token;
-        private CustomUserDetail user;
+        private UserInfoDto user;
 }

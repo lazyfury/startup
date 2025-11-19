@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 
 @Slf4j
@@ -15,10 +16,10 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class MvcControllerExceptionAdvice {
 
     @ExceptionHandler(Exception.class)
-    public String exHandler(Exception exception, HttpSession session){
+    public String exHandler(Exception exception, HttpSession session, RedirectAttributes redirectAttributes){
         log.info("自定义错误处理器:======"+ exception.getMessage() + "===========");
-        session.setAttribute("code",400);
-        session.setAttribute("message",exception.getMessage());
+        redirectAttributes.addFlashAttribute("code",400);
+        redirectAttributes.addFlashAttribute("message",exception.getMessage());
         return "redirect:/error";
     }
 }

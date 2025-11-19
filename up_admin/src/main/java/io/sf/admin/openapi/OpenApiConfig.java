@@ -1,4 +1,4 @@
-package io.sf.config.openapi;
+package io.sf.admin.openapi;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -21,7 +21,7 @@ public class OpenApiConfig {
     public OpenAPI customOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("用户认证系统 API")
+                        .title("用户认证系统 Admin")
                         .version("1.0.0")
                         .description("基于Spring Security和JWT的用户认证系统API文档")
                         .contact(new Contact()

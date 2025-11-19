@@ -15,4 +15,7 @@
       </nav>
     </div>
   </header>
+    <div class="message content-width p-2" th:if="${message}" th:text="${message}"></div>
+    <div class="success content-width p-2" th:if="${success}" th:text="${success}"></div>
+    <div class="error content-width p-2" th:if="${error}" th:text="${error}"></div>
   </div>

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -54,9 +55,7 @@ public class HomeController {
 
     // login page
     @GetMapping("/login")
-    public String login(Model model) {
-        return "login";
-    }
+    public String login(Model model,HttpSession session) {return "login";}
 
     // register page
     @GetMapping("/register")
@@ -76,30 +75,30 @@ public class HomeController {
     }
 
     @PostMapping("/register")
-    public void registerUserPost(@ModelAttribute LoginRequest request, HttpServletResponse response,
+    public String registerUserPost(@ModelAttribute LoginRequest request, HttpServletResponse response,
+            RedirectAttributes redirectAttributes,
             HttpSession session) throws Exception {
         try {
             userService.registerUser(
                     new User(null, request.getUsername(), request.getPassword(), Boolean.TRUE, 1l, null, null));
-            response.sendRedirect("/me");
-            return;
+            return "redirect:/";
         } catch (DuplicateKeyException e) {
-            session.setAttribute("registerError", "用户名不可用");
+            redirectAttributes.addFlashAttribute("error", "用户名不可用");
         } catch (Exception e) {
-            session.setAttribute("registerError", e.getMessage());
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
-        response.sendRedirect("/register");
+        return "redirect:/register";
     }
 
     // login
     @PostMapping("/login")
-    public void loginPost(Model model,
+    public String loginPost(Model model,
             HttpServletRequest request,
             HttpServletResponse response,
             @ModelAttribute LoginRequest loginRequest,
-            HttpSession session) throws IOException {
-        session.removeAttribute("loginError");
-        System.out.println("login: " + loginRequest);
+            HttpSession session,
+                          RedirectAttributes redirectAttributes
+                          ) throws IOException {
         try {
             var authentication = authenticationProvider
                     .authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getUsername(),
@@ -111,24 +110,16 @@ public class HomeController {
                     SecurityContextHolder.getContext());
             // 处理记住我功能
             rememberMeServices.loginSuccess(request, response, authentication);
-            response.sendRedirect("/");
-            return;
+            redirectAttributes.addFlashAttribute("success","您已登入");
+            return "redirect:/";
         } catch (BadCredentialsException e) {
-            session.setAttribute("loginError", "用户名或密码错误");
+            redirectAttributes.addFlashAttribute("error", "用户名或密码错误");
         } catch (Exception e) {
-            session.setAttribute("loginError", "登录失败");
+            redirectAttributes.addFlashAttribute("error", "登录失败");
         }
 
-        response.sendRedirect("/login");
+        return "redirect:/login";
 
-    }
-
-    // logout
-    @GetMapping("/logout")
-    public void logout(HttpServletRequest request, HttpServletResponse response, HttpSession session) throws IOException {
-        SecurityContextHolder.clearContext();
-        session.removeAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
-        response.sendRedirect("/");
     }
 
 }

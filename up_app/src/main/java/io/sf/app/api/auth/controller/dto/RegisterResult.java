@@ -10,6 +10,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class RegisterResult {
     private long userId;
-    private CustomUserDetail user;
+    private UserInfoDto user;
     private String token;
 }

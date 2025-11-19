@@ -2,7 +2,9 @@ package io.sf.modules.auth.service.impl;
 
 import io.sf.modules.auth.entity.User;
 import io.sf.modules.auth.mapper.UserMapper;
+import io.sf.modules.auth.repository.UserRepository;
 import io.sf.modules.auth.service.IUserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
@@ -10,10 +12,14 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 public class UserService implements IUserService {
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -21,6 +27,11 @@ public class UserService implements IUserService {
     @Override
     public Optional<User> getUserByUsername(String username) {
         return userMapper.getUserByUsername(username);
+    }
+
+    @Override
+    public  Optional<User> findUserById(Long id){
+        return userRepository.findById(id);
     }
 
     @Override
@@ -35,6 +46,7 @@ public class UserService implements IUserService {
             throw new RuntimeException("用户名已存在", e);
         }
         catch (Exception e) {
+            log.info("注册用户异常=======",e);
             throw new RuntimeException("注册用户失败", e);
         }
     }

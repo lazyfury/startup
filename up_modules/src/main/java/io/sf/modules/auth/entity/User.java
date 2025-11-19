@@ -22,7 +22,7 @@ public class User {
 @Column(name = "id")
 private Long id;
 
-@Column(name = "username", nullable = false, unique = true)
+@Column(name = "username", nullable = false, unique = true,length = 100)
 private String username;
 
 @Column(name = "password", nullable = false)

@@ -20,9 +20,7 @@
           <label for="password" class="block text-sm text-gray-700">密码</label>
           <input id="password" name="password" type="password" required autocomplete="new-password"
             class="block w-full border border-gray-300 rounded-1 px-2 py-1" />
-          <button type="submit" class="btn">创建账户</button>
-          <div class="text-red-600 text-sm" th:if="${session.registerError}" th:text="${session.registerError}"></div>
-          <div class="text-green-600 text-sm" th:if="${param.success}" th:text="'注册成功，请前往登录'"></div>
+          <button type="submit" class="btn  btn-primary">创建账户</button>
         </form>
       </div>
       <div class="mt-1"><a href="/login" class="link">去登录</a> · <a href="/" class="link">首页</a></div>

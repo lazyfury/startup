@@ -22,9 +22,10 @@ public class CustomUserDetail implements UserDetails {
     private final Boolean enabled;
     @JsonIgnore
     private final Collection<? extends GrantedAuthority> authorities;
+
     @Getter
     @JsonIgnore
-    private final User user; // 原始实体，便于业务使用
+    private final User user;
 
     public CustomUserDetail(User user, Collection<? extends GrantedAuthority> authorities) {
         this.id = user.getId();

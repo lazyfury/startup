@@ -3,6 +3,7 @@ package io.sf.app.api.auth.controller;
 import io.sf.app.api.auth.controller.dto.LoginRequest;
 import io.sf.app.api.auth.controller.dto.LoginResult;
 import io.sf.app.api.auth.controller.dto.RegisterResult;
+import io.sf.app.api.auth.controller.dto.UserInfoDto;
 import io.sf.config.security.jwt.JwtTokenService;
 import io.sf.modules.auth.entity.User;
 import io.sf.modules.auth.security.CustomUserDetail;
@@ -18,9 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.HashMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -57,7 +61,7 @@ public class UserController {
     @PostMapping("/register")
     public JsonResult<RegisterResult> registerUserPost(@RequestBody LoginRequest request) throws Exception {
         int affectedRows = userService.registerUser(
-                new User(null, request.getUsername(), request.getPassword(), Boolean.TRUE, 1l, null, null));
+                new User(null, request.getUsername(), request.getPassword(), Boolean.TRUE, 1L, null, null));
         if (affectedRows <= 0) {
             throw new Exception("注册账号错误");
         }
@@ -68,7 +72,7 @@ public class UserController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         CustomUserDetail userDetail = (CustomUserDetail) authentication.getPrincipal();
         var token = jwtTokenService.generateToken(request.getUsername());
-        RegisterResult result = new RegisterResult(user.getId(), userDetail, token);
+        RegisterResult result = new RegisterResult(user.getId(), new UserInfoDto(userDetail.getUser()), token);
         return new JsonResult<RegisterResult>(200, result, "ok");
 
     }
@@ -84,14 +88,15 @@ public class UserController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
         CustomUserDetail user = (CustomUserDetail) authentication.getPrincipal();
         var token = jwtTokenService.generateToken(loginData.getUsername());
-        return new JsonResult<LoginResult>(200, new LoginResult(token, user), "ok");
+        return new JsonResult<LoginResult>(200, new LoginResult(token, new UserInfoDto(user.getUser())), "ok");
     }
 
     @GetMapping("/me")
-    public JsonResult<CustomUserDetail> profile() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        CustomUserDetail user = (CustomUserDetail) auth.getPrincipal();
-        return new JsonResult<CustomUserDetail>(200, user, "");
+    public JsonResult<UserInfoDto> profile(@AuthenticationPrincipal UserDetails userDetails) throws AccessDeniedException {
+        if (userDetails instanceof CustomUserDetail userDetail){
+            return new JsonResult<>(200, new UserInfoDto(userDetail.getUser()), "");
+        }
+        throw new AccessDeniedException("获取用户信息失败");
     }
 
     @GetMapping("/ex")

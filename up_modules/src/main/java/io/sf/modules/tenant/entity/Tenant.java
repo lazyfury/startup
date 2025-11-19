@@ -1,6 +1,5 @@
-package io.sf.modules.merchant.entity;
+package io.sf.modules.tenant.entity;
 
-import io.sf.modules.tenant.entity.Tenant;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,22 +10,18 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "merchant", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"tenant_id", "code"})
+@Table(name = "tenant", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"code"})
 })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Merchant {
+public class Tenant {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long id;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tenant_id")
-    private Tenant tenant;
 
     @Column(name = "name", nullable = false, length = 128)
     private String name;

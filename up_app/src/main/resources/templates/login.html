@@ -27,8 +27,6 @@
       </div>
 
       <button type="submit" class="btn btn-primary">登录</button>
-      <div class="text-red-600 text-sm" th:if="${session.loginError}" th:text="${session.loginError}"></div>
-      <div class="text-green-600 text-sm" th:if="${param.logout}" th:text="'您已退出登录'"></div>
     </form>
   </div>
   <div class="text-gray-600 mt-2">没有账号？请先注册后登录。</div>

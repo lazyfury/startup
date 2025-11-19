@@ -5,8 +5,8 @@ spring:
   config:
     import: optional:application-local.yaml
   datasource:
-    url: jdbc:mysql://127.0.0.1:3307/auth?useUnicode=true&useSSL=false&serverTimezone=UTC
-    username: auth
+    url: jdbc:mysql://127.0.0.1:3307/startup?useUnicode=true&useSSL=false&serverTimezone=UTC
+    username: startup
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
