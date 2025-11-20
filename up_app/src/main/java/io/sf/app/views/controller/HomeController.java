@@ -126,10 +126,4 @@ public class HomeController {
 
     }
 
-    @GetMapping("/hqjh/getUrl")
-    public String getUrl() {
-        return "hqjh/getUrl";
-    }
-    
-
 }
