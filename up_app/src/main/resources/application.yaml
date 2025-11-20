@@ -44,6 +44,8 @@ security:
   whitelist:
     - /api/auth/login
     - /api/auth/register
+    - /hqjh/getUrl
+    - /api/hqjh/getUrl
   
 
 # 日志配置

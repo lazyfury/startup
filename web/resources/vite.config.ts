@@ -18,7 +18,7 @@ export default defineConfig({
       strict: false,
       allow: [
         "../..",
-        "../../up_run/src/main/resources/templates"
+        "../../up_app/src/main/resources/templates"
       ]
     }
   },

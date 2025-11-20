@@ -8,7 +8,7 @@ export default defineConfig({
     ],
     content: {
         filesystem: [
-            '../../up_run/src/main/resources/templates/**/*.html',
+            '../../up_app/src/main/resources/templates/**/*.html',
         ]
     },
     theme: {

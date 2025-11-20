@@ -3,6 +3,9 @@ package io.sf.third.hqjh;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import kong.unirest.Unirest;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,24 +38,23 @@ public class HqjhApiClient {
     }
 
     // 调用示例
-    public Map<String, Object> callApi(Long userId, String moduleKey) throws JsonProcessingException {
-        // 准备业务参数
-        Map<String, Object> params = new HashMap<>();
-        params.put("serviceUserKey", "sk_test_" + userId);
-        params.put("payUrl", "https://cusj.com");
-        params.put("expireUrl", "https://dhdjs.com/expire");
-        params.put("mchUuidNo", "M1763027684499");
-        params.put("moduleKey", moduleKey);
-
+    public Map<String, Object> callApi(String url,Map<String,Object> params) throws JsonProcessingException {
         // 生成签名头
         Map<String, String> headers = generateHeaders(params);
         headers.put("Content-Type", "application/json");
         // 发送请求（请使用您选择的HTTP客户端）
         // 注意：同时传递params和headers
-        var response = Unirest.post(properties.getBaseUrl() + "/h5/api/commonUrl").headers(headers)
+        var response = Unirest.post(properties.getBaseUrl() + url).headers(headers)
                 .body(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(params)).asJson();
         log.info(response.getBody().toString());
         return response.getBody().getObject().toMap();
     }
+
+    public Map<String, Object> getUrl(Long userId, HqjhGetUrlRequest request) throws JsonProcessingException {
+        request.setMchUuidNo(properties.getMchNo());
+        request.setServiceUserKey(String.format("sk_local_test_%d",userId));
+        return callApi("/h5/api/commonUrl", request.toMap());
+    }
+
 
 }
