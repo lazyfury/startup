@@ -3,18 +3,24 @@ package io.sf.modules.config.service.impl;
 import io.sf.modules.config.entity.ConfigSetting;
 import io.sf.modules.config.entity.ScopeType;
 import io.sf.modules.config.repository.ConfigSettingRepository;
+import io.sf.modules.config.entity.ConfigGroup;
+import io.sf.modules.config.repository.ConfigGroupRepository;
 import io.sf.modules.config.service.IConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Optional;
+import java.util.List;
 
 @Service
 public class ConfigService implements IConfigService {
 
     @Autowired
     private ConfigSettingRepository repository;
+
+    @Autowired
+    private ConfigGroupRepository groupRepository;
 
     @Override
     @PreAuthorize("#scopeType != T(io.sf.modules.config.entity.ScopeType).SYSTEM or hasAuthority('CONFIG_SYSTEM')")
@@ -81,6 +87,52 @@ public class ConfigService implements IConfigService {
         existing.ifPresent(cfg -> {
             cfg.setStatus(Boolean.FALSE);
             repository.save(cfg);
+        });
+    }
+
+    @Override
+    public List<ConfigSetting> getByGroup(Long groupId) {
+        return repository.findAllByGroupIdAndStatusIsTrue(groupId);
+    }
+
+    @Override
+    public List<ConfigSetting> saveOrUpdateByGroup(Long groupId, List<ConfigSetting> settings) {
+        Optional<ConfigGroup> groupOpt = groupRepository.findById(groupId);
+        if (groupOpt.isEmpty()) {
+            throw new IllegalArgumentException("config_group not found");
+        }
+        ConfigGroup group = groupOpt.get();
+        for (ConfigSetting s : settings) {
+            s.setGroupId(groupId);
+            s.setScopeType(group.getScopeType());
+            s.setScopeId(group.getScopeId());
+            Optional<ConfigSetting> existing = s.getScopeId() != null
+                    ? repository.findByKeyAndScopeTypeAndScopeIdAndStatusIsTrue(s.getKey(), s.getScopeType(), s.getScopeId())
+                    : repository.findByKeyAndScopeTypeAndStatusIsTrue(s.getKey(), s.getScopeType());
+            if (existing.isPresent()) {
+                ConfigSetting found = existing.get();
+                found.setValue(s.getValue());
+                found.setType(s.getType());
+                found.setStatus(s.getStatus());
+                found.setGroupId(groupId);
+                repository.save(found);
+            } else {
+                repository.save(s);
+            }
+        }
+        return repository.findAllByGroupIdAndStatusIsTrue(groupId);
+    }
+
+    @Override
+    public void deactivateGroup(Long groupId) {
+        long count = repository.countByGroupIdAndStatusIsTrue(groupId);
+        if (count > 0) {
+            throw new IllegalStateException("config_group has settings");
+        }
+        Optional<ConfigGroup> groupOpt = groupRepository.findById(groupId);
+        groupOpt.ifPresent(g -> {
+            g.setStatus(Boolean.FALSE);
+            groupRepository.save(g);
         });
     }
 }

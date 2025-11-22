@@ -4,6 +4,7 @@ import java.util.Map;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
 
 @Data
 @NoArgsConstructor
@@ -24,5 +25,11 @@ public class JsonResult<T extends Object> {
         this.data = data;
         this.message = message;
         this.extra = extra;
+    }
+
+    public JsonResult(HttpStatus httpStatus, T result) {
+        this.code = httpStatus.value();
+        this.data = result;
+        this.message = httpStatus.toString();
     }
 }
