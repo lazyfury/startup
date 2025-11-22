@@ -4,6 +4,7 @@ import java.nio.file.Path;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -15,7 +16,7 @@ public class ViteResourceConfigurer implements WebMvcConfigurer {
     private ViteProperties viteProperties;
 
     @Override
-    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+    public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
         Path publicDir = viteService.resolvePublicDir();
         registry.addResourceHandler("/" + viteProperties.getAssetsDir() + "/**")
                 .addResourceLocations(publicDir.resolve(viteProperties.getAssetsDir()).toUri().toString());

@@ -2,7 +2,6 @@ package io.sf.utils.auth;
 
 import io.sf.modules.auth.security.CustomUserDetail;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 
 public class AuthUtil {
     public  static CustomUserDetail getUser() throws InterruptedException {

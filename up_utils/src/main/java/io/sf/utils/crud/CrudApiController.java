@@ -1,6 +1,8 @@
 package io.sf.utils.crud;
 
 import io.sf.utils.response.JsonResult;
+import io.swagger.v3.oas.annotations.Operation;
+
 import org.apache.ibatis.javassist.NotFoundException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -8,7 +10,6 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,6 +29,7 @@ public abstract class CrudApiController<E, ID, R extends JpaRepository<E, ID> & 
 
     /** 列表 + 动态查询 */
     @GetMapping
+    @Operation(summary = "列表 + 动态查询",tags = {"CRUD"})
     public JsonResult<Page<E>> list(
             @NonNull Pageable pageable,
             @RequestParam Map<String, String> params
@@ -40,6 +42,7 @@ public abstract class CrudApiController<E, ID, R extends JpaRepository<E, ID> & 
 
     /** 查询单条 */
     @GetMapping("/{id}")
+    @Operation(summary = "查询单条",tags = {"CRUD"})
     public JsonResult<E> getById(@NonNull @PathVariable ID id) throws Exception {
         Optional<E> result = repository.findById(id);
         E responseEntity = result.orElseThrow(()->{     
@@ -50,6 +53,7 @@ public abstract class CrudApiController<E, ID, R extends JpaRepository<E, ID> & 
 
     /** 创建 */
     @PostMapping
+    @Operation(summary = "创建",tags = {"CRUD"})
     public JsonResult<E> create(@NonNull @RequestBody E body) {
         E saved = repository.save(body);
         return new JsonResult<E>(HttpStatus.OK,saved);
@@ -57,6 +61,7 @@ public abstract class CrudApiController<E, ID, R extends JpaRepository<E, ID> & 
 
     /** 更新（PUT 全量覆盖） */
     @PutMapping("/{id}")
+    @Operation(summary = "更新（PUT 全量覆盖）",tags = {"CRUD"})
     public JsonResult<E> update(
             @NonNull @PathVariable ID id,
             @NonNull @RequestBody E body
@@ -70,6 +75,7 @@ public abstract class CrudApiController<E, ID, R extends JpaRepository<E, ID> & 
 
     /** 删除 */
     @DeleteMapping("/{id}")
+    @Operation(summary = "删除",tags = {"CRUD"})
     public JsonResult<Void> delete(@NonNull @PathVariable ID id) {
         if (!repository.existsById(id)) {
             return new JsonResult<Void>(HttpStatus.NOT_FOUND,null);

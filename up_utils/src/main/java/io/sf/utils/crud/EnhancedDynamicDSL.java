@@ -19,7 +19,6 @@ public class EnhancedDynamicDSL<T> {
         this.params = params;
     }
 
-    @SuppressWarnings("unchecked")
     public Specification<T> build() {
         return (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
@@ -128,6 +127,7 @@ public class EnhancedDynamicDSL<T> {
         };
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private Predicate buildPredicate(CriteriaBuilder cb, Operator op, Path<?> path, Object value) {
         switch (op) {
             case EQ: return cb.equal(path, value);
