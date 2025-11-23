@@ -28,8 +28,6 @@
         <module>third</module>
         <module>up_utils</module>
         <module>up_admin</module>
-        <module>eureka_server</module>
-        <module>spring_gateway</module>
     </modules>
     <scm>
         <connection/>
@@ -77,6 +75,10 @@
             <scope>test</scope>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
 
 
         <!-- SpringDoc OpenAPI -->

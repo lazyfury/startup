@@ -28,15 +28,6 @@ spring:
   application:
     name: api   # 微服务名称，用于 Eureka 注册
 
-eureka:
-  client:
-    register-with-eureka: true
-    fetch-registry: true
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-
-
-
 mybatis:
   mapper-locations: classpath*:mapper/**/*.xml
   configuration:
@@ -85,3 +76,12 @@ hqjh:
   base-url: ${HQJH_BASE_URL:http://127.0.0.1:1003/api}
   mch-no: ${HQJH_MCH_NO:}
   
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,env   # 启用健康检查、信息、度量、环境端点
+        exclude: shutdown                  # 排除 shutdown 端点（可以防止暴露关闭服务的端点）
+  endpoint:
+    health:
+      show-details: always                # 显示详细健康信息
