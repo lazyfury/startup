@@ -26,7 +26,16 @@ spring:
           max-idle: 8
           min-idle: 0
           max-wait: -1ms
-  
+  application:
+    name: admin   # 微服务名称，用于 Eureka 注册
+
+eureka:
+  client:
+    register-with-eureka: true
+    fetch-registry: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+
 
 mybatis:
   mapper-locations: classpath*:mapper/**/*.xml
@@ -72,4 +81,6 @@ hqjh:
   api-secret: ${HQJH_API_SECRET:}
   base-url: ${HQJH_BASE_URL:http://127.0.0.1:1003/api}
   mch-no: ${HQJH_MCH_NO:}
-  
+
+
+
