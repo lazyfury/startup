@@ -2,9 +2,11 @@ package io.sf.utils.response;
 
 import java.util.Map;
 
+import jakarta.annotation.Nullable;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Data
 @NoArgsConstructor
@@ -12,6 +14,8 @@ public class JsonResult<T extends Object> {
     private int code;
     private T data;
     private String message;
+
+    @Nullable
     private Map<String,Object> extra;
 
     public JsonResult(int code, T data, String message){

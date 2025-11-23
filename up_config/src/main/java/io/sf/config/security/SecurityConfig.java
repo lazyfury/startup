@@ -5,6 +5,7 @@ import java.util.HashMap;
 import io.sf.utils.response.JsonResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,6 +38,9 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    @Value("${server.wantJson:false}")
+    private Boolean appWantJson;
 
     @Autowired
     private SecurityProperties securityProperties;
@@ -115,7 +119,7 @@ public class SecurityConfig {
                             log.debug("访问被拒绝：{}", accessDeniedException.getMessage());
                             var wantJson = request.getHeader("Content-Type") != null
                                     && request.getHeader("Content-Type").contains("application/json");
-                            if (wantJson) {
+                            if (wantJson || appWantJson) {
                                 HashMap<String,Object> extra = new HashMap<>();
                                 extra.put("ExceptionHandler", "Spring Security AccessDenied");
                                 JsonResult<String> result = new JsonResult<>(HttpServletResponse.SC_FORBIDDEN, null, "Forbidden",extra);
@@ -129,7 +133,7 @@ public class SecurityConfig {
                             log.debug("未认证请求：{}", authException.getMessage());
                             var wantJson = request.getHeader("Content-Type") != null
                                     && request.getHeader("Content-Type").contains("application/json");
-                            if (wantJson) {
+                            if (wantJson || appWantJson) {
                                 HashMap<String,Object> extra = new HashMap<>();
                                 extra.put("ExceptionHandler", "Spring Security Unauthorized");
                                 JsonResult<String> result = new JsonResult<>(HttpServletResponse.SC_UNAUTHORIZED, null, "Unauthorized");
@@ -159,7 +163,7 @@ public class SecurityConfig {
     public AuthenticationFailureHandler customAuthenticationFailureHandler() {
         return (request, response, exception) -> {
             String contextType = request.getHeader("Content-Type");
-            if (contextType != null && contextType.contains("application/json")) {
+            if (contextType != null && contextType.contains("application/json") || appWantJson) {
                 HashMap<String, String> errorResponse = new HashMap<>();
                 errorResponse.put("error", "Authentication failed");
 

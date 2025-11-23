@@ -2,6 +2,7 @@ package io.sf.app.openapi;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.headers.Header;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
@@ -37,6 +38,7 @@ public class OpenApiConfig {
                                 .type(SecurityScheme.Type.HTTP)
                                 .scheme("bearer")
                                 .bearerFormat("JWT")
-                                .description("JWT认证令牌，格式: Bearer {token}")));
+                                .description("JWT认证令牌，格式: Bearer {token}"))
+                        .addHeaders("content-type",new Header().example("application/json;")));
     }
 }
