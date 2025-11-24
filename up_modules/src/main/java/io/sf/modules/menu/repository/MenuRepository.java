@@ -1,0 +1,15 @@
+package io.sf.modules.menu.repository;
+
+import io.sf.modules.menu.entity.Menu;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface MenuRepository extends JpaRepository<Menu, Long>, JpaSpecificationExecutor<Menu> {
+    List<Menu> findAllByStatusIsTrueOrderByOrderNoAsc();
+    List<Menu> findAllByParentIdOrderByOrderNoAsc(Long parentId);
+}
+

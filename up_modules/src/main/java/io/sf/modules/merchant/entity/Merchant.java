@@ -1,6 +1,5 @@
 package io.sf.modules.merchant.entity;
 
-import io.sf.modules.tenant.entity.Tenant;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "merchant", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"tenant_id", "code"})
+        @UniqueConstraint(columnNames = {"code", "tenant_id"})
 })
 @Data
 @NoArgsConstructor
@@ -24,18 +23,17 @@ public class Merchant {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "tenant_id")
-    private Tenant tenant;
-
     @Column(name = "name", nullable = false, length = 128)
     private String name;
 
     @Column(name = "code", nullable = false, length = 64)
     private String code;
 
-    @Column(name = "enabled", nullable = false)
-    private Boolean enabled = Boolean.TRUE;
+    @Column(name = "tenant_id")
+    private Long tenantId;
+
+    @Column(name = "status", nullable = false)
+    private Boolean status = Boolean.TRUE;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
@@ -45,3 +43,4 @@ public class Merchant {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
+

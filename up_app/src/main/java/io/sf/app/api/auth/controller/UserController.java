@@ -101,7 +101,7 @@ public class UserController {
 
     @GetMapping("/ex")
     public String getMethodName(@RequestParam String param) throws Exception {
-        throw new Exception("测试security拦截异常");
+        throw new Exception("测试security 1 拦截异常");
     }
 
 }

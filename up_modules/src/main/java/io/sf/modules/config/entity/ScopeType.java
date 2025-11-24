@@ -4,5 +4,6 @@ public enum ScopeType {
     SYSTEM,
     TENANT,
     USER,
-    APP
+    APP,
+    MERCHANT
 }

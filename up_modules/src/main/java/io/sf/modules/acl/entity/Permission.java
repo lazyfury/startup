@@ -1,5 +1,6 @@
-package io.sf.modules.tenant.entity;
+package io.sf.modules.acl.entity;
 
+import io.sf.modules.config.entity.ScopeType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,14 +11,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "tenant", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"code"})
+@Table(name = "permission", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"code", "scope_type", "scope_id"})
 })
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Tenant {
-
+public class Permission {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
@@ -29,8 +29,12 @@ public class Tenant {
     @Column(name = "code", nullable = false, length = 64)
     private String code;
 
-    @Column(name = "description", length = 512)
-    private String description;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "scope_type", nullable = false, length = 16)
+    private ScopeType scopeType;
+
+    @Column(name = "scope_id")
+    private Long scopeId;
 
     @Column(name = "status", nullable = false)
     private Boolean status = Boolean.TRUE;

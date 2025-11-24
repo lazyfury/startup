@@ -10,14 +10,14 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class MyUserDetailsService implements UserDetailsService {
 
     @Autowired
     private IUserService userService;
+
 
     
 
@@ -27,8 +27,7 @@ public class MyUserDetailsService implements UserDetailsService {
         if (user == null) {
             throw new UsernameNotFoundException("User not found: " + username);
         }
-        // 假设用户只有一个角色，这里简单地将角色转换为 GrantedAuthority
-        List<GrantedAuthority> authorities = Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getUsername()));
+        Collection<? extends GrantedAuthority> authorities = userService.getAuthorities(user);
         return new CustomUserDetail(user, authorities);
     }
 }

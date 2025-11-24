@@ -9,7 +9,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import io.sf.modules.acl.entity.Role;
+import io.sf.modules.acl.entity.RolePermission;
+import io.sf.modules.acl.entity.UserRole;
+import io.sf.modules.acl.entity.Permission;
+import io.sf.modules.acl.repository.RoleRepository;
+import io.sf.modules.acl.repository.RolePermissionRepository;
+import io.sf.modules.acl.repository.UserRoleRepository;
+import io.sf.modules.acl.repository.PermissionRepository;
+import io.sf.modules.config.entity.ScopeType;
+
+import java.util.*;
 import java.util.Optional;
 
 @Slf4j
@@ -23,6 +36,18 @@ public class UserService implements IUserService {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private UserRoleRepository userRoleRepository;
+
+    @Autowired
+    private RoleRepository roleRepository;
+
+    @Autowired
+    private RolePermissionRepository rolePermissionRepository;
+
+    @Autowired
+    private PermissionRepository permissionRepository;
 
     @Override
     public Optional<User> getUserByUsername(String username) {
@@ -59,5 +84,29 @@ public class UserService implements IUserService {
             return user;
         }
         return Optional.empty();
+    }
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities(User user) {
+        List<UserRole> urs = userRoleRepository.findAllByUserId(user.getId());
+        Set<Long> roleIds = new HashSet<>();
+        for (UserRole ur : urs) roleIds.add(ur.getRoleId());
+        List<Role> roles = roleIds.isEmpty() ? Collections.emptyList() : roleRepository.findAllById(roleIds);
+        List<GrantedAuthority> authorities = new ArrayList<>();
+        for (Role r : roles) {
+            if (r.getScopeType() == ScopeType.SYSTEM || (r.getScopeType() == ScopeType.TENANT && Objects.equals(r.getScopeId(), user.getTenantId()))) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + r.getCode()));
+            }
+        }
+        Set<Long> permIds = new HashSet<>();
+        for (Role r : roles) {
+            List<RolePermission> rps = rolePermissionRepository.findAllByRoleId(r.getId());
+            for (RolePermission rp : rps) permIds.add(rp.getPermissionId());
+        }
+        List<Permission> perms = permIds.isEmpty() ? Collections.emptyList() : permissionRepository.findAllById(permIds);
+        for (Permission p : perms) {
+            authorities.add(new SimpleGrantedAuthority("PERM_" + p.getCode()));
+        }
+        return authorities;
     }
 }

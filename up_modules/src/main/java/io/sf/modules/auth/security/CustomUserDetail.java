@@ -37,8 +37,7 @@ public class CustomUserDetail implements UserDetails {
     }
 
     public static CustomUserDetail from(User user) {
-        // 默认给普通用户角色；实际可从数据库加载角色/权限
-        return new CustomUserDetail(user, Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
+        return new CustomUserDetail(user, Collections.emptyList());
     }
 
     @Override
