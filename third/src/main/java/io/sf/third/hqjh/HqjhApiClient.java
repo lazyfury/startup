@@ -1,7 +1,9 @@
 package io.sf.third.hqjh;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.exc.StreamReadException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import kong.unirest.JsonNode;
@@ -14,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -53,7 +56,7 @@ public class HqjhApiClient {
         return response.getBody();
     }
 
-    public HqjhClientResponse<HqjhClientResponse.GetUrlResponseData> getUrl(Long userId, HqjhGetUrlRequest request) throws Exception {
+    public HqjhClientResponse<HqjhClientResponse.GetUrlResponseData> getUrl(Long userId, HqjhGetUrlRequest request) throws IOException,StreamReadException,DatabindException {
         request.setMchUuidNo(properties.getMchNo());
         request.setServiceUserKey(String.format("sk_local_test_%d",userId));
         var response = callApi("/h5/api/commonUrl", request.toMap());
