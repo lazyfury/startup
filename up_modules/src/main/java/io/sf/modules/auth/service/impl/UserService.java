@@ -94,7 +94,10 @@ public class UserService implements IUserService {
         List<Role> roles = roleIds.isEmpty() ? Collections.emptyList() : roleRepository.findAllById(roleIds);
         List<GrantedAuthority> authorities = new ArrayList<>();
         for (Role r : roles) {
-            if (r.getScopeType() == ScopeType.SYSTEM || (r.getScopeType() == ScopeType.TENANT && Objects.equals(r.getScopeId(), user.getTenantId()))) {
+            if (r.getScopeType() == ScopeType.SYSTEM
+                    || (r.getScopeType() == ScopeType.TENANT && Objects.equals(r.getScopeId(), user.getTenantId()))
+                    || (r.getScopeType() == ScopeType.MERCHANT && Objects.equals(r.getScopeId(), user.getMerchantId()))
+            ) {
                 authorities.add(new SimpleGrantedAuthority("ROLE_" + r.getCode()));
             }
         }

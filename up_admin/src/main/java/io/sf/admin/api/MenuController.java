@@ -18,7 +18,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("menu")
-@Tag(name = "后台菜单管理", description = "后台路由菜单管理接口（支持树形）")
+@Tag(name = "系统配置/后台菜单管理", description = "后台路由菜单管理接口（支持树形）")
 public class MenuController extends CrudApiController<Menu, Long, MenuRepository> {
     protected MenuController(MenuRepository repository) {
         super(repository);

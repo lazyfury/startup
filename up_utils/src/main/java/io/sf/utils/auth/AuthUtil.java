@@ -9,6 +9,6 @@ public class AuthUtil {
         if (principal instanceof  CustomUserDetail customUserDetail){
             return customUserDetail;
         }
-        throw new InterruptedException("为获取到登录的用户");
+        throw new InterruptedException("未获取到登录的用户");
     }
 }

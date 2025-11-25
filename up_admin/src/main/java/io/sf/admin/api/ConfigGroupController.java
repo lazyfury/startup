@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("config-group")
-@Tag(name = "配置分组管理",description = "配置分组管理接口")
+@Tag(name = "系统配置/配置分组管理",description = "配置分组管理接口")
 public class ConfigGroupController extends CrudApiController<ConfigGroup, Long, ConfigGroupRepository> {
     protected ConfigGroupController(ConfigGroupRepository repository) {
         super(repository);

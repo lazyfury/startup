@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("role")
-@Tag(name = "角色管理", description = "角色管理接口")
+@Tag(name = "用户权限/角色管理", description = "角色管理接口")
 public class RoleController extends CrudApiController<Role, Long, RoleRepository> {
     protected RoleController(RoleRepository repository) {
         super(repository);

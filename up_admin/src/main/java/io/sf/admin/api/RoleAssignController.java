@@ -4,6 +4,13 @@ import io.sf.modules.acl.entity.RolePermission;
 import io.sf.modules.acl.entity.UserRole;
 import io.sf.modules.acl.repository.RolePermissionRepository;
 import io.sf.modules.acl.repository.UserRoleRepository;
+import io.sf.modules.acl.entity.Role;
+import io.sf.modules.acl.entity.Permission;
+import io.sf.modules.acl.repository.RoleRepository;
+import io.sf.modules.acl.repository.PermissionRepository;
+import io.sf.modules.auth.entity.User;
+import io.sf.modules.auth.repository.UserRepository;
+import io.sf.modules.config.entity.ScopeType;
 import io.sf.utils.response.JsonResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -11,29 +18,59 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("acl")
-@Tag(name = "角色权限绑定", description = "角色与权限、用户与角色绑定接口")
+@Tag(name = "用户权限/角色权限绑定", description = "角色与权限、用户与角色绑定接口")
 public class RoleAssignController {
 
     private final RolePermissionRepository rolePermissionRepository;
     private final UserRoleRepository userRoleRepository;
+    private final RoleRepository roleRepository;
+    private final PermissionRepository permissionRepository;
+    private final UserRepository userRepository;
 
-    public RoleAssignController(RolePermissionRepository rolePermissionRepository, UserRoleRepository userRoleRepository) {
+    public RoleAssignController(RolePermissionRepository rolePermissionRepository, UserRoleRepository userRoleRepository, RoleRepository roleRepository, PermissionRepository permissionRepository, UserRepository userRepository) {
         this.rolePermissionRepository = rolePermissionRepository;
         this.userRoleRepository = userRoleRepository;
+        this.roleRepository = roleRepository;
+        this.permissionRepository = permissionRepository;
+        this.userRepository = userRepository;
     }
 
     @GetMapping("/role/{roleId}/permissions")
     @Operation(summary = "查询角色的权限")
     public JsonResult<List<RolePermission>> rolePermissions(@PathVariable Long roleId) {
-        return new JsonResult<>(HttpStatus.OK, rolePermissionRepository.findAllByRoleId(roleId));
+        var roleOpt = roleRepository.findById(roleId);
+        if (roleOpt.isEmpty()) return new JsonResult<>(HttpStatus.NOT_FOUND, null);
+        Role role = roleOpt.get();
+        List<RolePermission> all = rolePermissionRepository.findAllByRoleId(roleId);
+        List<RolePermission> filtered = new java.util.ArrayList<>();
+        for (RolePermission rp : all) {
+            var permOpt = permissionRepository.findById(rp.getPermissionId());
+            if (permOpt.isPresent()) {
+                Permission p = permOpt.get();
+                boolean match = p.getScopeType() == role.getScopeType() && Objects.equals(p.getScopeId(), role.getScopeId());
+                if (match) filtered.add(rp);
+            }
+        }
+        return new JsonResult<>(HttpStatus.OK, filtered);
     }
 
     @PostMapping("/role/{roleId}/permissions")
     @Operation(summary = "替换角色的权限")
     public JsonResult<Void> replaceRolePermissions(@PathVariable Long roleId, @RequestBody List<Long> permissionIds) {
+        var roleOpt = roleRepository.findById(roleId);
+        if (roleOpt.isEmpty()) return new JsonResult<>(HttpStatus.NOT_FOUND, null);
+        Role role = roleOpt.get();
+        for (Long pid : permissionIds) {
+            var permOpt = permissionRepository.findById(pid);
+            if (permOpt.isEmpty()) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
+            Permission p = permOpt.get();
+            boolean match = p.getScopeType() == role.getScopeType() && Objects.equals(p.getScopeId(), role.getScopeId());
+            if (!match) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
+        }
         rolePermissionRepository.deleteAllByRoleId(roleId);
         for (Long pid : permissionIds) {
             RolePermission rp = new RolePermission();
@@ -47,12 +84,38 @@ public class RoleAssignController {
     @GetMapping("/user/{userId}/roles")
     @Operation(summary = "查询用户的角色")
     public JsonResult<List<UserRole>> userRoles(@PathVariable Long userId) {
-        return new JsonResult<>(HttpStatus.OK, userRoleRepository.findAllByUserId(userId));
+        var userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) return new JsonResult<>(HttpStatus.NOT_FOUND, null);
+        User user = userOpt.get();
+        List<UserRole> all = userRoleRepository.findAllByUserId(userId);
+        List<UserRole> filtered = new java.util.ArrayList<>();
+        for (UserRole ur : all) {
+            var roleOpt = roleRepository.findById(ur.getRoleId());
+            if (roleOpt.isPresent()) {
+                Role r = roleOpt.get();
+                boolean allowed = (r.getScopeType() == ScopeType.TENANT && Objects.equals(r.getScopeId(), user.getTenantId()))
+                        || (r.getScopeType() == ScopeType.MERCHANT && Objects.equals(r.getScopeId(), user.getMerchantId()))
+                        || (r.getScopeType() == ScopeType.SYSTEM);
+                if (allowed) filtered.add(ur);
+            }
+        }
+        return new JsonResult<>(HttpStatus.OK, filtered);
     }
 
     @PostMapping("/user/{userId}/roles")
     @Operation(summary = "替换用户的角色")
     public JsonResult<Void> replaceUserRoles(@PathVariable Long userId, @RequestBody List<Long> roleIds) {
+        var userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) return new JsonResult<>(HttpStatus.NOT_FOUND, null);
+        User user = userOpt.get();
+        for (Long rid : roleIds) {
+            var roleOpt = roleRepository.findById(rid);
+            if (roleOpt.isEmpty()) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
+            Role r = roleOpt.get();
+            boolean allowed = (r.getScopeType() == ScopeType.TENANT && Objects.equals(r.getScopeId(), user.getTenantId()))
+                    || (r.getScopeType() == ScopeType.MERCHANT && Objects.equals(r.getScopeId(), user.getMerchantId()));
+            if (!allowed) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
+        }
         userRoleRepository.deleteAllByUserId(userId);
         for (Long rid : roleIds) {
             UserRole ur = new UserRole();
@@ -63,4 +126,3 @@ public class RoleAssignController {
         return new JsonResult<>(HttpStatus.NO_CONTENT, null);
     }
 }
-

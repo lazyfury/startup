@@ -1,7 +1,10 @@
 package io.sf.third.hqjh;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -38,23 +41,53 @@ public class HqjhApiClient {
     }
 
     // 调用示例
-    public Map<String, Object> callApi(String url,Map<String,Object> params) throws JsonProcessingException {
+    public byte[] callApi(String url,Map<String,Object> params) throws JsonProcessingException {
         // 生成签名头
         Map<String, String> headers = generateHeaders(params);
         headers.put("Content-Type", "application/json");
         // 发送请求（请使用您选择的HTTP客户端）
         // 注意：同时传递params和headers
         var response = Unirest.post(properties.getBaseUrl() + url).headers(headers)
-                .body(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(params)).asJson();
+                .body(new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(params)).asBytes();
         log.info(response.getBody().toString());
-        return response.getBody().getObject().toMap();
+        return response.getBody();
     }
 
-    public Map<String, Object> getUrl(Long userId, HqjhGetUrlRequest request) throws JsonProcessingException {
+    public HqjhClientResponse<HqjhClientResponse.GetUrlResponseData> getUrl(Long userId, HqjhGetUrlRequest request) throws Exception {
         request.setMchUuidNo(properties.getMchNo());
         request.setServiceUserKey(String.format("sk_local_test_%d",userId));
-        return callApi("/h5/api/commonUrl", request.toMap());
+        var response = callApi("/h5/api/commonUrl", request.toMap());
+        var result = new ObjectMapper().readValue(response, new TypeReference<HqjhClientResponse<HqjhClientResponse.GetUrlResponseData>>() {});
+        return result;
     }
 
 
+
+    // {
+    //     "code": 200,
+    //         "msg": null,
+    //         "data": {
+    //             "url": "http://8.138.3.168:1888/h5/index?uuidNo=b457654bb15f4abd906985fd0ba2becf&signature=6b6d37d32a7a76ac72d014308ecd879b&nonce=VA9C52YlOcP1hE6VKEA1v5Vwjfq797RK&timestamp=1764033520715&merchantNo=M1763639259155",
+    //             "mchUuidNo": "M1763639259155",
+    //             "uuidNo": "b457654bb15f4abd906985fd0ba2becf"
+    //         }
+    // }
+
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class HqjhClientResponse<T> {
+        private int code;
+        private String msg;
+        private T data;
+
+        @Data
+        @AllArgsConstructor
+        @NoArgsConstructor
+        public static class GetUrlResponseData {
+            private String url;
+            private String mchUuidNo;
+            private String uuidNo;
+        }
+    }
 }

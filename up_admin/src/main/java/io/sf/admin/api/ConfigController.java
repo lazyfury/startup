@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("config")
-@Tag(name = "配置管理",description = "配置管理接口")
+@Tag(name = "系统配置/配置管理",description = "配置管理接口")
 public class ConfigController extends CrudApiController<ConfigSetting,Long, ConfigSettingRepository> {
     protected ConfigController(ConfigSettingRepository repository) {
         super(repository);

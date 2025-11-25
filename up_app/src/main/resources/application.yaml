@@ -47,6 +47,7 @@ security:
     - /api/auth/register
     - /hqjh/getUrl
     - /api/hqjh/getUrl
+    - /api/hqjh/jump
   
 
 # 日志配置

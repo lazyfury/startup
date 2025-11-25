@@ -61,7 +61,7 @@ public class UserController {
     @PostMapping("/register")
     public JsonResult<RegisterResult> registerUserPost(@RequestBody LoginRequest request) throws Exception {
         int affectedRows = userService.registerUser(
-                new User(null, request.getUsername(), request.getPassword(), Boolean.TRUE, 1L, null, null));
+                new User(null, request.getUsername(), request.getPassword(), Boolean.TRUE, 1L, null, null, null));
         if (affectedRows <= 0) {
             throw new Exception("注册账号错误");
         }

@@ -35,6 +35,9 @@ private Boolean enabled = Boolean.TRUE;
 @Column(name = "tenant_id")
 private Long tenantId;
 
+@Column(name = "merchant_id")
+private Long merchantId;
+
 @CreationTimestamp
 @Column(name = "created_at", updatable = false)
 private LocalDateTime createdAt;

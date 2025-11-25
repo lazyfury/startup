@@ -14,8 +14,8 @@
 
     <!-- 注册用户，字段与实体 User 保持一致 -->
     <insert id="insertUser" parameterType="io.sf.modules.auth.entity.User" useGeneratedKeys="true" keyProperty="id">
-        INSERT INTO user (username, password, enabled,tenant_id,created_at, updated_at)
-        VALUES (#{username}, #{password}, #{enabled},${tenantId},NOW(), NOW())
+        INSERT INTO user (username, password, enabled,tenant_id,merchant_id,created_at, updated_at)
+        VALUES (#{username}, #{password}, #{enabled},${tenantId},${merchantId},NOW(), NOW())
     </insert>
 
 </mapper>

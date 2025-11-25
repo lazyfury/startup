@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("user")
-@Tag(name = "用户管理", description = "用户管理接口（Admin）")
+@Tag(name = "用户权限/用户管理", description = "用户管理接口（Admin）")
 public class UserController extends CrudApiController<User, Long, UserRepository> {
     protected UserController(UserRepository repository) {
         super(repository);
