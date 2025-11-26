@@ -3,7 +3,6 @@ package io.sf.app.views.controller;
 import io.sf.app.api.auth.controller.dto.LoginRequest;
 import io.sf.modules.auth.entity.User;
 import io.sf.modules.auth.service.IUserService;
-import io.sf.third.hqjh.HqjhGetUrlRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DuplicateKeyException;
@@ -26,7 +25,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.io.IOException;
 import java.util.HashMap;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 
 @Slf4j
