@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.Optional;
 
 
 @RestController
@@ -31,12 +32,12 @@ public class HqjhController {
     }
 
     @GetMapping("/jump")
-    public void jump(@RequestParam String module, @RequestParam Long userId,HttpServletResponse response) throws Exception {
+    public void jump(@RequestParam Optional<String> module, @RequestParam Long userId,HttpServletResponse response) throws Exception {
         var hqjhGetUrlRequest = new HqjhGetUrlRequest();
         
         hqjhGetUrlRequest.setPayUrl("https://distinct-instructor.biz/");
         hqjhGetUrlRequest.setExpireUrl("https://aggressive-custody.biz/");
-        hqjhGetUrlRequest.setModuleKey(module);
+        hqjhGetUrlRequest.setModuleKey(module.orElse(""));
         hqjhGetUrlRequest.setExchangeRate("1");
         hqjhGetUrlRequest.setUnitExchangeRate("1");
         hqjhGetUrlRequest.setUnit("元");
