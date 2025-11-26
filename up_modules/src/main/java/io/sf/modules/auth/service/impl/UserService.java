@@ -56,6 +56,7 @@ public class UserService implements IUserService {
 
     @Override
     public  Optional<User> findUserById(Long id){
+        Objects.requireNonNull(id);
         return userRepository.findById(id);
     }
 

@@ -15,6 +15,7 @@ import io.sf.utils.response.JsonResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -41,14 +42,15 @@ public class RoleAssignController {
 
     @GetMapping("/role/{roleId}/permissions")
     @Operation(summary = "查询角色的权限")
-    public JsonResult<List<RolePermission>> rolePermissions(@PathVariable Long roleId) {
+    public JsonResult<List<RolePermission>> rolePermissions(@NonNull @PathVariable Long roleId) {
         var roleOpt = roleRepository.findById(roleId);
         if (roleOpt.isEmpty()) return new JsonResult<>(HttpStatus.NOT_FOUND, null);
         Role role = roleOpt.get();
         List<RolePermission> all = rolePermissionRepository.findAllByRoleId(roleId);
         List<RolePermission> filtered = new java.util.ArrayList<>();
         for (RolePermission rp : all) {
-            var permOpt = permissionRepository.findById(rp.getPermissionId());
+            var permissionId = Objects.requireNonNull(rp.getPermissionId());
+            var permOpt = permissionRepository.findById(permissionId);
             if (permOpt.isPresent()) {
                 Permission p = permOpt.get();
                 boolean match = p.getScopeType() == role.getScopeType() && Objects.equals(p.getScopeId(), role.getScopeId());
@@ -60,12 +62,13 @@ public class RoleAssignController {
 
     @PostMapping("/role/{roleId}/permissions")
     @Operation(summary = "替换角色的权限")
-    public JsonResult<Void> replaceRolePermissions(@PathVariable Long roleId, @RequestBody List<Long> permissionIds) {
+    public JsonResult<Void> replaceRolePermissions(@NonNull @PathVariable Long roleId, @RequestBody List<Long> permissionIds) {
         var roleOpt = roleRepository.findById(roleId);
         if (roleOpt.isEmpty()) return new JsonResult<>(HttpStatus.NOT_FOUND, null);
         Role role = roleOpt.get();
         for (Long pid : permissionIds) {
-            var permOpt = permissionRepository.findById(pid);
+            var permissionId = Objects.requireNonNull(pid);
+            var permOpt = permissionRepository.findById(permissionId);
             if (permOpt.isEmpty()) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
             Permission p = permOpt.get();
             boolean match = p.getScopeType() == role.getScopeType() && Objects.equals(p.getScopeId(), role.getScopeId());
@@ -83,14 +86,15 @@ public class RoleAssignController {
 
     @GetMapping("/user/{userId}/roles")
     @Operation(summary = "查询用户的角色")
-    public JsonResult<List<UserRole>> userRoles(@PathVariable Long userId) {
+    public JsonResult<List<UserRole>> userRoles(@NonNull @PathVariable Long userId) {
         var userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) return new JsonResult<>(HttpStatus.NOT_FOUND, null);
         User user = userOpt.get();
         List<UserRole> all = userRoleRepository.findAllByUserId(userId);
         List<UserRole> filtered = new java.util.ArrayList<>();
         for (UserRole ur : all) {
-            var roleOpt = roleRepository.findById(ur.getRoleId());
+            var roleId = Objects.requireNonNull(ur.getRoleId());
+            var roleOpt = roleRepository.findById(roleId);
             if (roleOpt.isPresent()) {
                 Role r = roleOpt.get();
                 boolean allowed = (r.getScopeType() == ScopeType.TENANT && Objects.equals(r.getScopeId(), user.getTenantId()))
@@ -104,12 +108,13 @@ public class RoleAssignController {
 
     @PostMapping("/user/{userId}/roles")
     @Operation(summary = "替换用户的角色")
-    public JsonResult<Void> replaceUserRoles(@PathVariable Long userId, @RequestBody List<Long> roleIds) {
+    public JsonResult<Void> replaceUserRoles(@NonNull @PathVariable Long userId, @RequestBody List<Long> roleIds) {
         var userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) return new JsonResult<>(HttpStatus.NOT_FOUND, null);
         User user = userOpt.get();
         for (Long rid : roleIds) {
-            var roleOpt = roleRepository.findById(rid);
+            var roleId = Objects.requireNonNull(rid);
+            var roleOpt = roleRepository.findById(roleId);
             if (roleOpt.isEmpty()) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
             Role r = roleOpt.get();
             boolean allowed = (r.getScopeType() == ScopeType.TENANT && Objects.equals(r.getScopeId(), user.getTenantId()))

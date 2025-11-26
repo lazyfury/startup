@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 
 import java.util.Optional;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class ConfigService implements IConfigService {
@@ -97,6 +98,7 @@ public class ConfigService implements IConfigService {
 
     @Override
     public List<ConfigSetting> saveOrUpdateByGroup(Long groupId, List<ConfigSetting> settings) {
+        Objects.requireNonNull(groupId);
         Optional<ConfigGroup> groupOpt = groupRepository.findById(groupId);
         if (groupOpt.isEmpty()) {
             throw new IllegalArgumentException("config_group not found");
@@ -128,6 +130,9 @@ public class ConfigService implements IConfigService {
         long count = repository.countByGroupIdAndStatusIsTrue(groupId);
         if (count > 0) {
             throw new IllegalStateException("config_group has settings");
+        }
+        if (groupId == null) {
+            throw new IllegalArgumentException("group_id required");
         }
         Optional<ConfigGroup> groupOpt = groupRepository.findById(groupId);
         groupOpt.ifPresent(g -> {

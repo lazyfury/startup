@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 import lombok.AllArgsConstructor;
 import lombok.Data;

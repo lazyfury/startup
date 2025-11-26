@@ -1,16 +1,13 @@
 package io.sf.app.api.hqjh.controller;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import io.sf.third.hqjh.HqjhGetUrlRequest;
 import io.sf.utils.auth.AuthUtil;
 import io.sf.utils.response.JsonResult;
 import jakarta.servlet.http.HttpServletResponse;
-import io.sf.modules.auth.security.CustomUserDetail;
 import io.sf.third.hqjh.HqjhApiClient;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.http.client.HttpRedirects;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;

@@ -9,6 +9,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -29,7 +30,7 @@ public class ConfigGroupController extends CrudApiController<ConfigGroup, Long, 
 
     @Override
     @DeleteMapping("/{id}")
-    public JsonResult<Void> delete(@PathVariable Long id) {
+    public JsonResult<Void> delete(@NonNull @PathVariable Long id) {
         try {
             configService.deactivateGroup(id);
             return new JsonResult<Void>(HttpStatus.NO_CONTENT, null);
