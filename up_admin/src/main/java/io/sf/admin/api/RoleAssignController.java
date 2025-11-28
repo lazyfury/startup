@@ -1,5 +1,6 @@
 package io.sf.admin.api;
 
+import io.sf.modules.acl.service.RoleAssignService;
 import io.sf.modules.acl.entity.RolePermission;
 import io.sf.modules.acl.entity.UserRole;
 import io.sf.modules.acl.repository.RolePermissionRepository;
@@ -31,13 +32,15 @@ public class RoleAssignController {
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
     private final UserRepository userRepository;
+    private final RoleAssignService roleAssignService;
 
-    public RoleAssignController(RolePermissionRepository rolePermissionRepository, UserRoleRepository userRoleRepository, RoleRepository roleRepository, PermissionRepository permissionRepository, UserRepository userRepository) {
+    public RoleAssignController(RolePermissionRepository rolePermissionRepository, UserRoleRepository userRoleRepository, RoleRepository roleRepository, PermissionRepository permissionRepository, UserRepository userRepository, RoleAssignService roleAssignService) {
         this.rolePermissionRepository = rolePermissionRepository;
         this.userRoleRepository = userRoleRepository;
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
         this.userRepository = userRepository;
+        this.roleAssignService = roleAssignService;
     }
 
     @GetMapping("/role/{roleId}/permissions")
@@ -65,22 +68,8 @@ public class RoleAssignController {
     public JsonResult<Void> replaceRolePermissions(@NonNull @PathVariable Long roleId, @RequestBody List<Long> permissionIds) {
         var roleOpt = roleRepository.findById(roleId);
         if (roleOpt.isEmpty()) return new JsonResult<>(HttpStatus.NOT_FOUND, null);
-        Role role = roleOpt.get();
-        for (Long pid : permissionIds) {
-            var permissionId = Objects.requireNonNull(pid);
-            var permOpt = permissionRepository.findById(permissionId);
-            if (permOpt.isEmpty()) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
-            Permission p = permOpt.get();
-            boolean match = p.getScopeType() == role.getScopeType() && Objects.equals(p.getScopeId(), role.getScopeId());
-            if (!match) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
-        }
-        rolePermissionRepository.deleteAllByRoleId(roleId);
-        for (Long pid : permissionIds) {
-            RolePermission rp = new RolePermission();
-            rp.setRoleId(roleId);
-            rp.setPermissionId(pid);
-            rolePermissionRepository.save(rp);
-        }
+        boolean ok = roleAssignService.replaceRolePermissions(roleId, permissionIds);
+        if (!ok) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
         return new JsonResult<>(HttpStatus.NO_CONTENT, null);
     }
 
@@ -111,23 +100,8 @@ public class RoleAssignController {
     public JsonResult<Void> replaceUserRoles(@NonNull @PathVariable Long userId, @RequestBody List<Long> roleIds) {
         var userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) return new JsonResult<>(HttpStatus.NOT_FOUND, null);
-        User user = userOpt.get();
-        for (Long rid : roleIds) {
-            var roleId = Objects.requireNonNull(rid);
-            var roleOpt = roleRepository.findById(roleId);
-            if (roleOpt.isEmpty()) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
-            Role r = roleOpt.get();
-            boolean allowed = (r.getScopeType() == ScopeType.TENANT && Objects.equals(r.getScopeId(), user.getTenantId()))
-                    || (r.getScopeType() == ScopeType.MERCHANT && Objects.equals(r.getScopeId(), user.getMerchantId()));
-            if (!allowed) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
-        }
-        userRoleRepository.deleteAllByUserId(userId);
-        for (Long rid : roleIds) {
-            UserRole ur = new UserRole();
-            ur.setUserId(userId);
-            ur.setRoleId(rid);
-            userRoleRepository.save(ur);
-        }
+        boolean ok = roleAssignService.replaceUserRoles(userId, roleIds);
+        if (!ok) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
         return new JsonResult<>(HttpStatus.NO_CONTENT, null);
     }
 }

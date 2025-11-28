@@ -47,6 +47,7 @@ security:
   whitelist:
     - /api/auth/login
     - /api/auth/register
+    - /api/auth/debug/create-admin
 
 # 日志配置
 logging:

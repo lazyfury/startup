@@ -1,5 +1,8 @@
 package io.sf.admin.api;
 
+import io.sf.modules.menu.service.MenuPermissionService;
+import io.sf.modules.acl.entity.Permission;
+import io.sf.modules.config.entity.ScopeType;
 import io.sf.modules.menu.entity.Menu;
 import io.sf.modules.menu.repository.MenuRepository;
 import io.sf.utils.crud.CrudApiController;
@@ -7,11 +10,11 @@ import io.sf.utils.response.JsonResult;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.lang.NonNull;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,8 +23,11 @@ import java.util.Map;
 @RequestMapping("menu")
 @Tag(name = "系统配置/后台菜单管理", description = "后台路由菜单管理接口（支持树形）")
 public class MenuController extends CrudApiController<Menu, Long, MenuRepository> {
-    protected MenuController(MenuRepository repository) {
+    private final MenuPermissionService menuPermissionService;
+
+    protected MenuController(MenuRepository repository, MenuPermissionService menuPermissionService) {
         super(repository);
+        this.menuPermissionService = menuPermissionService;
     }
 
     @Override
@@ -51,5 +57,45 @@ public class MenuController extends CrudApiController<Menu, Long, MenuRepository
         }
         return new JsonResult<>(HttpStatus.OK, roots);
     }
-}
 
+    @GetMapping("/{id}/permissions")
+    @Operation(summary = "查询菜单的权限")
+    public JsonResult<List<Permission>> listPermissions(@NonNull @PathVariable Long id,
+                                                        @RequestParam(required = false) String scopeType,
+                                                        @RequestParam(required = false) Long scopeId) {
+        ScopeType st = null;
+        if (scopeType != null) {
+            try { st = ScopeType.valueOf(scopeType.toUpperCase()); } catch (Exception ignored) {}
+        }
+        List<Permission> list = menuPermissionService.listMenuPermissions(id, st, scopeId);
+        return new JsonResult<>(HttpStatus.OK, list);
+    }
+
+    @PostMapping("/{id}/permissions/auto")
+    @Operation(summary = "为菜单自动创建权限")
+    public JsonResult<List<Permission>> autoCreatePermissions(@NonNull @PathVariable Long id,
+                                                             @RequestBody(required = false) Map<String, Object> body) {
+        List<String> actions;
+        if (body != null && body.get("actions") instanceof List) {
+            actions = (List<String>) body.get("actions");
+        } else {
+            actions = Arrays.asList("view", "create", "update", "delete");
+        }
+        ScopeType st = ScopeType.SYSTEM;
+        Long sid = null;
+        if (body != null) {
+            Object ost = body.get("scopeType");
+            if (ost instanceof String) {
+                try { st = ScopeType.valueOf(((String) ost).toUpperCase()); } catch (Exception ignored) {}
+            }
+            Object osid = body.get("scopeId");
+            if (osid instanceof Number) sid = ((Number) osid).longValue();
+        }
+
+        List<Permission> created = menuPermissionService.autoCreate(id, st, sid, actions);
+        if (created.isEmpty()) {
+            return new JsonResult<>(HttpStatus.OK, created);
+        }
+        return new JsonResult<>(HttpStatus.CREATED, created);
+    }
+}

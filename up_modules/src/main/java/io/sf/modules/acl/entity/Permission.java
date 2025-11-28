@@ -9,6 +9,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "permission", uniqueConstraints = {
@@ -29,6 +31,15 @@ public class Permission {
     @Column(name = "code", nullable = false, length = 64)
     private String code;
 
+    @Column(name = "description", length = 512)
+    private String description;
+
+    @Column(name = "tag", length = 64)
+    private String tag;
+
+    @Column(name = "parent_id")
+    private Long parentId;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "scope_type", nullable = false, length = 16)
     private ScopeType scopeType;
@@ -46,5 +57,7 @@ public class Permission {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-}
 
+    @Transient
+    private List<Permission> children = new ArrayList<>();
+}

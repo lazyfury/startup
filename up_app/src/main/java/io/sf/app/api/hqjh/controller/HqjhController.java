@@ -24,6 +24,10 @@ public class HqjhController {
     @Autowired
     private HqjhApiClient client;
 
+    @Autowired
+    private HqjhGetUrlRequest _hqjhGetUrlRequest;
+
+
 
     @PostMapping("/getUrl")
     public JsonResult<HashMap<String, Object>> getUrl(@RequestBody HqjhGetUrlRequest hqjhGetUrlRequest, @AuthenticationPrincipal UserDetails userDetails) throws Exception {
@@ -37,17 +41,13 @@ public class HqjhController {
     public void jump(@RequestParam Optional<String> module, @RequestParam Long userId,@RequestParam Optional<String> showWay,@RequestParam Optional<String> rate,@RequestParam Optional<String> userCharge,HttpServletResponse response) throws Exception {
         var hqjhGetUrlRequest = new HqjhGetUrlRequest();
         
-        hqjhGetUrlRequest.setPayUrl("https://distinct-instructor.biz/");
-        hqjhGetUrlRequest.setExpireUrl("https://aggressive-custody.biz/");
         hqjhGetUrlRequest.setModuleKey(module.orElse(""));
         hqjhGetUrlRequest.setExchangeRate(rate.orElse("1"));
         hqjhGetUrlRequest.setUnitExchangeRate(rate.orElse("1"));
-        hqjhGetUrlRequest.setUnit("元");
-        hqjhGetUrlRequest.setAttach("non voluptate ut est cupidatat");
-        hqjhGetUrlRequest.setClientType("h5");
-        hqjhGetUrlRequest.setRoundType("0");
         hqjhGetUrlRequest.setChargeShowWay(showWay.orElse("0"));
         hqjhGetUrlRequest.setUserCharge(userCharge.orElse("0"));
+
+        hqjhGetUrlRequest.fill(_hqjhGetUrlRequest);
         
         var resp = client.getUrl(userId, hqjhGetUrlRequest);
         var url = resp.getData().getUrl();

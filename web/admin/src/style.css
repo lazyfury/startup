@@ -1,0 +1,38 @@
+:root {
+  --sidebar-bg: #0b0e19;
+  --sidebar-text: #cbd5e1;
+  --sidebar-active-bg: #0f1929;
+  --sidebar-hover-bg: #1a293d;
+  --sidebar-active-text: #ffffff;
+}
+
+.el-aside {
+  background-color: var(--sidebar-bg);
+}
+
+.el-aside .el-menu {
+  background-color: transparent;
+  border-right: 0;
+  color: var(--sidebar-text);
+}
+
+.el-aside .el-menu .el-menu-item,
+.el-aside .el-menu .el-sub-menu__title {
+  color: var(--sidebar-text);
+}
+
+.el-aside .el-menu .el-menu-item.is-active,
+.el-aside .el-menu .el-sub-menu.is-active > .el-sub-menu__title {
+  color: var(--sidebar-active-text);
+  background-color: var(--sidebar-active-bg);
+}
+
+.el-aside .el-menu .el-menu-item:hover,
+.el-aside .el-menu .el-sub-menu__title:hover {
+  color: var(--sidebar-active-text);
+  background-color: var(--sidebar-hover-bg);
+}
+
+.el-aside .el-menu .el-icon {
+  color: inherit;
+}
