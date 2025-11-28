@@ -3,6 +3,7 @@ package io.sf.utils.vite.config;
 import java.nio.file.Path;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.lang.NonNull;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -10,6 +11,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class ViteResourceConfigurer implements WebMvcConfigurer {
+
+        @Value("${server.debug:false}")
+        private Boolean isDebug;
+
     @Autowired
     private ViteService viteService;
     @Autowired
@@ -17,6 +22,10 @@ public class ViteResourceConfigurer implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(@NonNull ResourceHandlerRegistry registry) {
+        if (!isDebug) {
+            return;
+        }
+
         Path publicDir = viteService.resolvePublicDir();
         registry.addResourceHandler("/" + viteProperties.getAssetsDir() + "/**")
                 .addResourceLocations(publicDir.resolve(viteProperties.getAssetsDir()).toUri().toString());
