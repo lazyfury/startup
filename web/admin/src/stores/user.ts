@@ -5,6 +5,7 @@ type UserInfo = {
   id: number
   username: string
   enabled?: boolean
+  isStaff?: boolean
   tenantId?: number | null
   avatarUrl?: string
 }

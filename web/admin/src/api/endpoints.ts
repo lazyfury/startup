@@ -4,6 +4,10 @@ export const API = {
     profile: '/api/auth/profile',
     createAdminDebug: '/api/auth/debug/create-admin'
   },
+  config: {
+    group: (id: number) => `/config/group/${id}`,
+    deactivateGroup: (id: number) => `/config/group/${id}/deactivate`
+  },
   configGroup: {
     list: '/config-group',
     item: (id: number) => `/config-group/${id}`

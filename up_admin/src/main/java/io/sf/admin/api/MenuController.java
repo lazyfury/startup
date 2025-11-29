@@ -37,8 +37,10 @@ public class MenuController extends CrudApiController<Menu, Long, MenuRepository
 
     @GetMapping("/tree")
     @Operation(summary = "获取菜单树")
-    public JsonResult<List<Menu>> tree() {
-        List<Menu> all = repository.findAllByStatusIsTrueOrderByOrderNoAsc();
+    public JsonResult<List<Menu>> tree(@RequestParam(required = false) Boolean includeDisabled) {
+        List<Menu> all = Boolean.TRUE.equals(includeDisabled)
+                ? repository.findAllByOrderByOrderNoAsc()
+                : repository.findAllByStatusIsTrueOrderByOrderNoAsc();
         Map<Long, Menu> map = new HashMap<>();
         List<Menu> roots = new ArrayList<>();
         for (Menu m : all) {

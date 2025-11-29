@@ -68,9 +68,12 @@ public class RoleAssignController {
     public JsonResult<Void> replaceRolePermissions(@NonNull @PathVariable Long roleId, @RequestBody List<Long> permissionIds) {
         var roleOpt = roleRepository.findById(roleId);
         if (roleOpt.isEmpty()) return new JsonResult<>(HttpStatus.NOT_FOUND, null);
-        boolean ok = roleAssignService.replaceRolePermissions(roleId, permissionIds);
-        if (!ok) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
-        return new JsonResult<>(HttpStatus.NO_CONTENT, null);
+        try {
+            roleAssignService.replaceRolePermissions(roleId, permissionIds);
+            return new JsonResult<>(HttpStatus.NO_CONTENT, null);
+        } catch (Exception e) {
+            return new JsonResult<>(HttpStatus.BAD_REQUEST.value(), null, e.getMessage());
+        }
     }
 
     @GetMapping("/user/{userId}/roles")
@@ -86,9 +89,9 @@ public class RoleAssignController {
             var roleOpt = roleRepository.findById(roleId);
             if (roleOpt.isPresent()) {
                 Role r = roleOpt.get();
-                boolean allowed = (r.getScopeType() == ScopeType.TENANT && Objects.equals(r.getScopeId(), user.getTenantId()))
-                        || (r.getScopeType() == ScopeType.MERCHANT && Objects.equals(r.getScopeId(), user.getMerchantId()))
-                        || (r.getScopeType() == ScopeType.SYSTEM);
+                boolean allowed = (r.getScopeType() == ScopeType.SYSTEM && Boolean.TRUE.equals(user.getIsStaff()))
+                        || (r.getScopeType() == ScopeType.TENANT && Objects.equals(r.getScopeId(), user.getTenantId()))
+                        || (r.getScopeType() == ScopeType.MERCHANT && Objects.equals(r.getScopeId(), user.getMerchantId()));
                 if (allowed) filtered.add(ur);
             }
         }
@@ -100,8 +103,11 @@ public class RoleAssignController {
     public JsonResult<Void> replaceUserRoles(@NonNull @PathVariable Long userId, @RequestBody List<Long> roleIds) {
         var userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) return new JsonResult<>(HttpStatus.NOT_FOUND, null);
-        boolean ok = roleAssignService.replaceUserRoles(userId, roleIds);
-        if (!ok) return new JsonResult<>(HttpStatus.BAD_REQUEST, null);
-        return new JsonResult<>(HttpStatus.NO_CONTENT, null);
+        try {
+            roleAssignService.replaceUserRoles(userId, roleIds);
+            return new JsonResult<>(HttpStatus.NO_CONTENT, null);
+        } catch (Exception e) {
+            return new JsonResult<>(HttpStatus.BAD_REQUEST.value(), null, e.getMessage());
+        }
     }
 }

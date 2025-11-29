@@ -52,6 +52,7 @@ public class AdminAuthController {
         userInfo.put("id", user.getId());
         userInfo.put("username", user.getUsername());
         userInfo.put("enabled", user.getEnabled());
+        userInfo.put("isStaff", user.getIsStaff());
         userInfo.put("tenantId", user.getTenantId());
         Map<String, Object> data = new HashMap<>();
         data.put("token", token);
@@ -89,6 +90,7 @@ public class AdminAuthController {
         admin.setUsername("admin");
         admin.setPassword(passwordEncoder.encode("admin123"));
         admin.setEnabled(Boolean.TRUE);
+        admin.setIsStaff(Boolean.TRUE);
         User saved = userRepository.save(admin);
         return new JsonResult<>(HttpStatus.CREATED, saved.getId());
     }

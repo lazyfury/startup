@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import ConfigTable, { type Column } from '../components/ConfigTable.vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import CRUDTable, { type Column } from '../components/table/CRUDTable.vue'
+import { ElMessage, ElMessageBox, ElTag } from 'element-plus'
 import { onMounted, ref, watch, nextTick } from 'vue'
 import { RoleApi } from '../api/apis/role'
 import { PermissionApi } from '../api/apis/permission'
@@ -11,8 +11,8 @@ import { SCOPE_TYPES } from '../api/types'
 const columns: Column[] = [
   { label: 'ID', prop: 'id', width: 80, align: 'center' },
   { label: '名称', prop: 'name', width: 160 },
-  { label: '编码', prop: 'code', width: 160 },
-  { label: '范围类型', prop: 'scopeType', width: 120 },
+  { label: '编码', prop: 'code', width: 160,component:ElTag },
+  { label: '范围类型', prop: 'scopeType', width: 120,component:ElTag },
   { label: '范围ID', prop: 'scopeId', width: 100, align: 'center' },
   { label: '启用', prop: 'status', width: 80, align: 'center' },
   { label: '更新于', prop: 'updatedAt', },
@@ -108,13 +108,13 @@ async function submitAssign() {
       </div>
     </template>
 
-    <ConfigTable ref="tableRef" :columns="columns" :request="request" row-key="id" selection>
+    <CRUDTable ref="tableRef" :columns="columns" :request="request" row-key="id" selection>
       <template #actions="{ row }">
         <el-button type="primary" link @click="openEdit(row)">编辑</el-button>
         <el-button type="primary" link @click="openAssign(row)">指派权限</el-button>
         <el-button type="danger" link @click="remove(row)">删除</el-button>
       </template>
-    </ConfigTable>
+    </CRUDTable>
 
     <el-dialog v-model="dialogVisible" :title="editing?.id ? '编辑角色' : '新增角色'" width="520px">
       <el-form label-width="88px">

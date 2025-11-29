@@ -12,5 +12,15 @@ export const AclApi = {
       method: 'POST',
       body: JSON.stringify(permissionIds)
     })
+  },
+  async getUserRoles(userId: number): Promise<ApiResponse<Array<{ userId: number; roleId: number }>>> {
+    const res = await request(API.acl.userRoles(userId))
+    return res.json()
+  },
+  async replaceUserRoles(userId: number, roleIds: number[]): Promise<HttpResponseLike> {
+    return request(API.acl.userRoles(userId), {
+      method: 'POST',
+      body: JSON.stringify(roleIds)
+    })
   }
 }

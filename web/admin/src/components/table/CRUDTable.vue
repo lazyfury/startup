@@ -1,5 +1,9 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import TextCell from '../cells/TextCell.vue'
+import BoolCell from '../cells/BoolCell.vue'
+import NumberCell from '../cells/NumberCell.vue'
+import PriceCell from '../cells/PriceCell.vue'
 
 export type Column = {
   label: string
@@ -10,6 +14,11 @@ export type Column = {
   fixed?: 'left' | 'right'
   sortable?: boolean
   slot?: string
+  valueType?: 'text' | 'number' | 'price' | 'bool'
+  formatOptions?: { decimals?: number; currency?: string; locale?: string }
+  render?: (value: any, row: any, index: number) => any
+  component?: any,
+  className?:string
 }
 
 const props = defineProps<{
@@ -24,7 +33,7 @@ const props = defineProps<{
   pageSize?: number
   pageSizes?: number[]
   autoFetch?: boolean
-  loading?: boolean
+  loading?: boolean,
 }>()
 
 const emit = defineEmits<{
@@ -43,6 +52,22 @@ const innerData = ref<any[]>([])
 
 const useRemote = computed(() => !!props.request)
 const dataSource = computed(() => (useRemote.value ? innerData.value : props.data || []))
+
+const getValue = (row: any, path?: string) => {
+  if (!path) return row
+  return String(path).split('.').reduce((acc: any, k: string) => (acc ? acc[k] : undefined), row) || "-"
+}
+
+const resolveCell = (c: Column) => {
+  if (c.component) return c.component
+  switch (c.valueType) {
+    case 'bool': return BoolCell
+    case 'number': return NumberCell
+    case 'price': return PriceCell
+    case 'text':
+    default: return TextCell
+  }
+}
 
 const fetch = async () => {
   if (!props.request) return
@@ -83,7 +108,7 @@ defineExpose({ refresh })
 </script>
 
 <template>
-  <div class="config-table">
+  <div class="crud-table">
     <slot name="toolbar" :refresh="refresh">
       <div class="table-toolbar">
         <el-button :disabled="(loading ?? innerLoading) === true" @click="refresh">
@@ -93,6 +118,7 @@ defineExpose({ refresh })
       </div>
     </slot>
     <el-table
+      :border="true"
       :data="dataSource"
       :row-key="rowKey"
       v-loading="loading ?? innerLoading"
@@ -102,6 +128,7 @@ defineExpose({ refresh })
       <el-table-column v-if="index" type="index" width="56" />
       <el-table-column
         v-for="c in columns"
+        :class-name="c.className"
         :key="c.prop || c.label"
         :type="c.type"
         :prop="c.prop"
@@ -112,7 +139,18 @@ defineExpose({ refresh })
         :sortable="c.sortable"
       >
         <template v-if="c.slot" #default="scope">
-          <slot :name="c.slot" v-bind="scope" />
+          <slot :name="c.slot" v-bind="scope" ></slot>
+        </template>
+        <template v-else #default="scope">
+          <component
+            :is="resolveCell(c)"
+            :value="getValue(scope.row, c.prop)"
+            :options="c.formatOptions"
+            :row="scope.row"
+            :index="scope.$index"
+          >
+          {{ c.render ? c.render?.(getValue(scope.row, c.prop), scope.row, scope.$index) : getValue(scope.row,c.prop) }}
+        </component>
         </template>
       </el-table-column>
     </el-table>
@@ -132,7 +170,7 @@ defineExpose({ refresh })
 </template>
 
 <style scoped>
-.config-table { display: flex; flex-direction: column; gap: 12px; }
+.crud-table { display: flex; flex-direction: column; gap: 12px; }
 .table-toolbar { display: flex; justify-content: flex-start; }
 .table-pagination { display: flex; justify-content: flex-end; }
 </style>

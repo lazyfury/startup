@@ -36,15 +36,15 @@ public class RoleAssignService {
     @Transactional
     public boolean replaceRolePermissions(Long roleId, List<Long> permissionIds) {
         var roleOpt = roleRepository.findById(roleId);
-        if (roleOpt.isEmpty()) return false;
+        if (roleOpt.isEmpty()) throw new IllegalArgumentException("role not found");
         Role role = roleOpt.get();
         var distinctPermissionIds = permissionIds.stream().filter(Objects::nonNull).distinct().toList();
         for (Long pid : distinctPermissionIds) {
             var permOpt = permissionRepository.findById(pid);
-            if (permOpt.isEmpty()) return false;
+            if (permOpt.isEmpty()) throw new IllegalArgumentException("permission not found");
             Permission p = permOpt.get();
             boolean match = p.getScopeType() == role.getScopeType() && Objects.equals(p.getScopeId(), role.getScopeId());
-            if (!match) return false;
+            if (!match) throw new IllegalStateException("permission scope mismatch");
         }
         var existingLinks = rolePermissionRepository.findAllByRoleId(roleId);
         var existingIds = existingLinks.stream().map(RolePermission::getPermissionId).distinct().toList();
@@ -68,16 +68,17 @@ public class RoleAssignService {
     @Transactional
     public boolean replaceUserRoles(Long userId, List<Long> roleIds) {
         var userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) return false;
+        if (userOpt.isEmpty()) throw new IllegalArgumentException("user not found");
         User user = userOpt.get();
         var distinctRoleIds = roleIds.stream().filter(Objects::nonNull).distinct().toList();
         for (Long rid : distinctRoleIds) {
             var roleOpt = roleRepository.findById(rid);
-            if (roleOpt.isEmpty()) return false;
+            if (roleOpt.isEmpty()) throw new IllegalArgumentException("role not found");
             Role r = roleOpt.get();
-            boolean allowed = (r.getScopeType() == ScopeType.TENANT && Objects.equals(r.getScopeId(), user.getTenantId()))
+            boolean allowed = (r.getScopeType() == ScopeType.SYSTEM && Boolean.TRUE.equals(user.getIsStaff()))
+                    || (r.getScopeType() == ScopeType.TENANT && Objects.equals(r.getScopeId(), user.getTenantId()))
                     || (r.getScopeType() == ScopeType.MERCHANT && Objects.equals(r.getScopeId(), user.getMerchantId()));
-            if (!allowed) return false;
+            if (!allowed) throw new IllegalStateException("role scope not allowed");
         }
         var existingLinks = userRoleRepository.findAllByUserId(userId);
         var existingIds = existingLinks.stream().map(UserRole::getRoleId).distinct().toList();

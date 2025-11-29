@@ -10,6 +10,6 @@ import java.util.List;
 @Repository
 public interface MenuRepository extends JpaRepository<Menu, Long>, JpaSpecificationExecutor<Menu> {
     List<Menu> findAllByStatusIsTrueOrderByOrderNoAsc();
+    List<Menu> findAllByOrderByOrderNoAsc();
     List<Menu> findAllByParentIdOrderByOrderNoAsc(Long parentId);
 }
-

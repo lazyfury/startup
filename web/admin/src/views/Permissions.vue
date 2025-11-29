@@ -12,11 +12,18 @@ const form = ref<Permission>(emptyForm())
 const loading = ref(false)
 const all = ref<Permission[]>([])
 const tree = ref<Permission[]>([])
+const annotateLevels = (nodes: Permission[], level = 0) => {
+  for (const n of nodes) {
+    ;(n as any)._level = level
+    if (Array.isArray((n as any).children)) annotateLevels((n as any).children, level + 1)
+  }
+}
 const refresh = async () => {
   loading.value = true
   try {
     const json = await PermissionApi.tree()
     tree.value = json.data || []
+    annotateLevels(tree.value)
   } finally {
     loading.value = false
   }
@@ -77,25 +84,34 @@ function addChild(parent: Permission) {
         </div>
       </div>
     </template>
-    <div class="mt-0">
-      <el-tree :data="tree" node-key="id" default-expand-all :props="{ children: 'children', label: 'name' }" v-loading="loading">
-        <template #default="{ data }">
-          <div class="flex items-center justify-between w-full">
-            <div class="flex items-center gap-2">
-              <span>{{ data.name }}</span>
-              <span class="text-gray-500">{{ data.code }}</span>
-              <el-tag v-if="data.status === false" size="small" type="warning">禁用</el-tag>
-              <el-tag v-if="data.tag" size="small" type="info">{{ data.tag }}</el-tag>
-            </div>
-            <div class="flex items-center gap-2">
-              <el-button link type="primary" @click="addChild(data)">新增子权限</el-button>
-              <el-button link type="primary" @click="openEdit(data)">编辑</el-button>
-              <el-button link type="danger" @click="remove(data)">删除</el-button>
-            </div>
+    <el-table :data="tree" row-key="id" :tree-props="{ children: 'children' }" v-loading="loading">
+      <el-table-column expanded width="50"></el-table-column>
+      <el-table-column label="名称" min-width="240">
+        <template #default="{ row }">
+          <div class="flex items-center gap-2" :style="{ paddingLeft: `${(row as any)._level ? (row as any)._level * 16 : 0}px` }">
+            <span>{{ row.name }}</span>
+            <span class="text-gray-500">{{ row.code }}</span>
+            <el-tag v-if="row.tag" size="small" type="info">{{ row.tag }}</el-tag>
+            <el-tag v-if="row.status === false" size="small" type="warning">禁用</el-tag>
           </div>
         </template>
-      </el-tree>
-    </div>
+      </el-table-column>
+      <el-table-column label="范围" width="180">
+        <template #default="{ row }">
+          <span>{{ row.scopeType }}</span>
+          <span v-if="row.scopeId !== null && row.scopeId !== undefined" class="text-gray-500">#{{ row.scopeId }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="320" align="center">
+        <template #default="{ row }">
+          <div class="flex items-center gap-2 justify-center">
+            <el-button link type="primary" @click="addChild(row)">新增子权限</el-button>
+            <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+            <el-button link type="danger" @click="remove(row)">删除</el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </el-table>
 
     <el-dialog v-model="dialogVisible" :title="editing?.id ? '编辑权限' : '新增权限'" width="560px">
       <el-form label-width="100px">

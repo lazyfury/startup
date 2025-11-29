@@ -32,6 +32,9 @@ public class Merchant {
     @Column(name = "tenant_id")
     private Long tenantId;
 
+    @Column(name = "enabled", nullable = false)
+    private Boolean enabled = Boolean.TRUE;
+
     @Column(name = "status", nullable = false)
     private Boolean status = Boolean.TRUE;
 
@@ -43,4 +46,3 @@ public class Merchant {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
-

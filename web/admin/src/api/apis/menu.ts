@@ -3,8 +3,9 @@ import { API } from '../endpoints'
 import type { ApiResponse, MenuItem, Permission, HttpResponseLike } from '../types'
 
 export const MenuApi = {
-  async tree(): Promise<ApiResponse<MenuItem[]>> {
-    const res = await request(API.menu.tree)
+  async tree(params?: { includeDisabled?: boolean }): Promise<ApiResponse<MenuItem[]>> {
+    const qp = params?.includeDisabled ? '?includeDisabled=true' : ''
+    const res = await request(`${API.menu.tree}${qp}`)
     return res.json()
   },
   async list(): Promise<ApiResponse<MenuItem[]>> {

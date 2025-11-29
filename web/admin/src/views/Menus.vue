@@ -30,12 +30,20 @@ const previewCodes = computed(() => {
   return willCreateActions.value.map((a) => `${base}${a}`)
 })
 
+const annotateLevels = (nodes: MenuItem[], level = 0) => {
+  for (const n of nodes) {
+    ;(n as any)._level = level
+    if (Array.isArray((n as any).children)) annotateLevels((n as any).children, level + 1)
+  }
+}
+
 const refresh = async () => {
   loading.value = true
   try {
-    const json = await MenuApi.tree()
+    const json = await MenuApi.tree({ includeDisabled: true })
     if (json.code >= 200 && json.code < 300) {
       tree.value = json.data || []
+      annotateLevels(tree.value)
     }
   } finally {
     loading.value = false
@@ -126,25 +134,37 @@ onMounted(refresh)
         </div>
       </div>
     </template>
-    <el-tree :data="tree" node-key="id" default-expand-all :props="{ children: 'children', label: 'name' }" v-loading="loading">
-      <template #default="{ data }">
-        <div class="flex items-center justify-between w-full">
-          <div class="flex items-center gap-2">
-            <el-icon v-if="data.icon"><component :is="data.icon" /></el-icon>
-            <span>{{ data.name }}</span>
-            <span class="text-gray-500">{{ data.path }}</span>
-            <el-tag v-if="data.hidden" size="small" type="info">隐藏</el-tag>
-            <el-tag v-if="data.status === false" size="small" type="warning">禁用</el-tag>
+    <el-table :data="tree" row-key="id" :tree-props="{ children: 'children' }" v-loading="loading">
+      <el-table-column expanded width="50"></el-table-column>
+      <el-table-column label="标题" min-width="200">
+        <template #default="{ row }">
+          <div class="flex items-center gap-2" :style="{ paddingLeft: `${(row as any)._level ? (row as any)._level * 16 : 0}px` }">
+            <el-icon v-if="row.icon"><component :is="row.icon" /></el-icon>
+            <span>{{ row.name }}</span>
+            <span class="text-gray-500">{{ row.path }}</span>
+            <el-tag v-if="row.type === 'DIRECTORY'" size="small" type="info">目录</el-tag>
+            <el-tag v-if="row.hidden" size="small" type="info">隐藏</el-tag>
+            <el-tag v-if="row.status === false" size="small" type="warning">禁用</el-tag>
           </div>
-        <div class="flex items-center gap-2">
-          <el-button link type="primary" @click="openCreateChild(data)">新增子菜单</el-button>
-          <el-button link type="primary" @click="openEdit(data)">编辑</el-button>
-          <el-button link type="primary" @click="openAutoPerm(data)">自动创建权限</el-button>
-          <el-button link type="danger" @click="remove(data)">删除</el-button>
-        </div>
-        </div>
-      </template>
-    </el-tree>
+        </template>
+      </el-table-column>
+      <el-table-column label="排序" prop="orderNo" width="100" />
+      <el-table-column label="类型" width="120">
+        <template #default="{ row }">
+          <span>{{ row.type }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="360" align="center">
+        <template #default="{ row }">
+          <div class="flex items-center gap-2 justify-center">
+            <el-button link type="primary" @click="openCreateChild(row)">新增子菜单</el-button>
+            <el-button link type="primary" @click="openEdit(row)">编辑</el-button>
+            <el-button link type="primary" @click="openAutoPerm(row)">自动创建权限</el-button>
+            <el-button link type="danger" @click="remove(row)">删除</el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </el-table>
 
     <el-dialog v-model="dialogVisible" :title="editing?.id ? '编辑菜单' : '新增菜单'" width="560px">
       <el-form label-width="100px">
@@ -242,4 +262,5 @@ onMounted(refresh)
 </template>
 
 <style scoped>
+.expand-row{padding-left:16px;padding-right:0;padding-top:0;padding-bottom:0;display:flex;align-items:center;gap:24px;font-size:14px}
 </style>

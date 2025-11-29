@@ -1,14 +1,17 @@
 <script setup lang="ts">
-import ConfigTable, { type Column } from '../components/ConfigTable.vue'
+import CRUDTable, { type Column } from '../components/table/CRUDTable.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { AdminUserApi } from '../api/apis/admin-user'
+import { RoleApi } from '../api/apis/role'
+import { AclApi } from '../api/apis/acl'
 import type { AdminUser } from '../api/types'
 
 const columns:Column[] = [
   { label: 'ID', prop: 'id', width: 80, align: 'center' },
-  { label: '账号', prop: 'username', width: 160 },
-  { label: '启用', prop: 'enabled', width: 80, align: 'center' },
+  { label: '账号', prop: 'username', width: 160,className:"font-bold text-15px" },
+  { label: '启用', prop: 'enabled', width: 80, align: 'center', valueType: 'bool' },
+  { label: '租户', prop: 'tenantName', width: 160 },
   { label: '角色', slot: 'roles' },
   { label: '更新于', prop: 'updatedAt' },
   { label: '操作', slot: 'actions', width: 220, align: 'center' }
@@ -22,22 +25,59 @@ const request = async ({ page, pageSize }: { page: number; pageSize: number }) =
 
 const dialogVisible = ref(false)
 const editing = ref<AdminUser | null>(null)
-const emptyForm = (): AdminUser => ({ username: '', password: '', enabled: true, tenantId: null, roles: [] })
+const emptyForm = (): AdminUser => ({ username: '', password: '', enabled: true, isStaff: false, tenantId: null, roles: [] })
 const form = ref<AdminUser>(emptyForm())
+const showResetPwd = ref(false)
 
-const openCreate = () => { editing.value = null; form.value = emptyForm(); dialogVisible.value = true }
-const openEdit = async (row: AdminUser) => { const json = await AdminUserApi.get(row.id as number); form.value = json.data; editing.value = { id: row.id } as any; dialogVisible.value = true }
+const allRoles = ref<{ id: number; name: string; code: string; scopeType?: string; scopeId?: number | null }[]>([])
+const loadRoles = async () => {
+  const json = await RoleApi.list({ page: 0, size: 9999 })
+  allRoles.value = (json.data?.content as any[]) || []
+}
+
+const roleMap = computed(() => {
+  const m = new Map<number, { id: number; name: string; code: string }>()
+  for (const r of allRoles.value) m.set(Number(r.id), r as any)
+  return m
+})
+
+const roleLabel = (id: number) => {
+  const r = roleMap.value.get(Number(id))
+  return r ? `${r.name}（${r.code}）` : String(id)
+}
+
+const openCreate = async () => { editing.value = null; form.value = emptyForm(); await loadRoles(); dialogVisible.value = true }
+const openEdit = async (row: AdminUser) => {
+  const json = await AdminUserApi.get(row.id as number)
+  form.value = json.data
+  form.value.password = ''
+  editing.value = { id: row.id } as any
+  await loadRoles()
+  const ur = await AclApi.getUserRoles(row.id as number)
+  form.value.roles = (ur.data || []).map((x: any) => x.roleId)
+  showResetPwd.value = false
+  dialogVisible.value = true
+}
 
 const submit = async () => {
   if (!form.value.username) { ElMessage.error('请输入账号'); return }
   if (editing.value?.id) {
     const json = await AdminUserApi.update(editing.value.id as number, form.value)
-    if (json.code >= 200 && json.code < 300) { ElMessage.success('更新成功'); dialogVisible.value = false; await tableRef.value?.refresh() }
-    else { ElMessage.error(json.message || '更新失败') }
+    if (json.code >= 200 && json.code < 300) {
+      if (Array.isArray(form.value.roles)) await AclApi.replaceUserRoles(editing.value.id as number, form.value.roles as number[])
+      ElMessage.success('更新成功')
+      dialogVisible.value = false
+      await tableRef.value?.refresh()
+    } else { ElMessage.error(json.message || '更新失败') }
   } else {
     const json = await AdminUserApi.create(form.value)
-    if (json.code >= 200 && json.code < 300) { ElMessage.success('创建成功'); dialogVisible.value = false; await tableRef.value?.refresh() }
-    else { ElMessage.error(json.message || '创建失败') }
+    if (json.code >= 200 && json.code < 300) {
+      const uid = (json.data as any)?.id
+      if (uid && Array.isArray(form.value.roles)) await AclApi.replaceUserRoles(uid as number, form.value.roles as number[])
+      ElMessage.success('创建成功')
+      dialogVisible.value = false
+      await tableRef.value?.refresh()
+    } else { ElMessage.error(json.message || '创建失败') }
   }
 }
 
@@ -50,7 +90,7 @@ const remove = async (row: AdminUser) => {
 }
 
 const tableRef = ref<{ refresh: () => Promise<void> } | null>(null)
-onMounted(() => { tableRef.value?.refresh() })
+onMounted(async () => { await loadRoles(); await tableRef.value?.refresh() })
 </script>
 
 <template>
@@ -62,15 +102,15 @@ onMounted(() => { tableRef.value?.refresh() })
       </div>
     </template>
 
-    <ConfigTable ref="tableRef" :columns="columns" :request="request" row-key="id" selection>
+    <CRUDTable ref="tableRef" :columns="columns" :request="request" row-key="id" selection>
       <template #roles="{ row }">
-        <el-tag v-for="r in row.roles || []" :key="r" size="small" class="mr-1">{{ r }}</el-tag>
+        <el-tag v-for="r in row.roles || []" :key="r" size="small" class="mr-1">{{ roleLabel(r) }}</el-tag>
       </template>
       <template #actions="{ row }">
         <el-button type="primary" link @click="openEdit(row)">编辑</el-button>
         <el-button type="danger" link @click="remove(row)">删除</el-button>
       </template>
-    </ConfigTable>
+    </CRUDTable>
 
     <el-dialog v-model="dialogVisible" :title="editing?.id ? '编辑用户' : '新增用户'" width="520px">
       <el-form label-width="88px">
@@ -83,8 +123,22 @@ onMounted(() => { tableRef.value?.refresh() })
         <el-form-item label="启用">
           <el-switch v-model="form.enabled" />
         </el-form-item>
+        <el-form-item label="工作人员">
+          <el-checkbox v-model="form.isStaff">是</el-checkbox>
+        </el-form-item>
         <el-form-item label="租户ID">
           <el-input-number v-model="form.tenantId" :min="0" :max="999999999" :controls="false" />
+        </el-form-item>
+        <el-form-item v-if="editing?.id" label="重置密码">
+          <div class="flex items-center gap-2 w-full">
+            <el-button @click="showResetPwd = true" v-if="!showResetPwd">启用重置</el-button>
+            <el-input v-else v-model="form.password" type="password" placeholder="请输入新密码" />
+          </div>
+        </el-form-item>
+        <el-form-item label="角色">
+          <el-select v-model="form.roles" multiple filterable collapse-tags collapse-tags-tooltip placeholder="请选择角色" style="width: 100%">
+            <el-option v-for="r in allRoles" :key="r.id" :label="`${r.name}（${r.code}）`" :value="Number(r.id)" />
+          </el-select>
         </el-form-item>
       </el-form>
       <template #footer>

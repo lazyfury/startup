@@ -68,7 +68,7 @@ const breadcrumbs = computed(() => {
 <template>
   <el-container style="min-height: 100vh">
     <el-aside  :width="collapsed ? '64px' : '200px'" style="transition: all 0.4s !important;">
-      <div class="flex flex-row items-center justify-center p-2">
+      <div class="flex flex-row items-center justify-center p-2 !h-[64px]">
         <el-avatar :size="30" :src="userStore.user?.avatarUrl"></el-avatar>
         <div v-if="!collapsed" class="text-3xl font-bold text-white ml-2">{{ 'Admin' }}</div>
       </div>
@@ -76,7 +76,7 @@ const breadcrumbs = computed(() => {
       <SidebarMenu :menus="menus" :collapsed="collapsed" />
     </el-aside>
     <el-container>
-      <el-header class=" bg-[#fefefe] flex items-center gap-4">
+      <el-header class=" bg-[#fefefe] flex items-center gap-4 !h-[64px]">
         <div class="toolbar flex-1">
           <el-button link @click="collapsed = !collapsed">
             <el-icon :size="24">

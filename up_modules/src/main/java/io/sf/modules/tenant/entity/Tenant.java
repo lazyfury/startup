@@ -32,6 +32,9 @@ public class Tenant {
     @Column(name = "description", length = 512)
     private String description;
 
+    @Column(name = "enabled", nullable = false)
+    private Boolean enabled = Boolean.TRUE;
+
     @Column(name = "status", nullable = false)
     private Boolean status = Boolean.TRUE;
 
@@ -43,4 +46,3 @@ public class Tenant {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
-

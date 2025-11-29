@@ -19,6 +19,7 @@ export type UserProfile = {
   id: number
   username: string
   enabled?: boolean
+  isStaff?: boolean
   tenantId?: number | null
   avatarUrl?: string
 }
@@ -58,6 +59,7 @@ export type AdminUser = {
   username: string
   password?: string
   enabled?: boolean
+  isStaff?: boolean
   tenantId?: number | null
   roles?: number[]
   createdAt?: string
@@ -85,6 +87,19 @@ export type Permission = {
   children?: Permission[]
   scopeType?: ScopeType
   scopeId?: number | null
+  status?: boolean
+  createdAt?: string
+  updatedAt?: string
+}
+
+export type ConfigSetting = {
+  id?: number
+  key: string
+  value: string
+  type: string
+  scopeType?: ScopeType
+  scopeId?: number | null
+  groupId?: number
   status?: boolean
   createdAt?: string
   updatedAt?: string

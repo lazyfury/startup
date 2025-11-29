@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ConfigTable, { type Column } from '../components/ConfigTable.vue'
+import CRUDTable, { type Column } from '../components/table/CRUDTable.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { onMounted, ref } from 'vue'
 import { TenantApi, type Tenant } from '../api/apis/tenant'
@@ -61,12 +61,12 @@ onMounted(() => { tableRef.value?.refresh() })
       </div>
     </template>
 
-    <ConfigTable ref="tableRef" :columns="columns" :request="request" row-key="id" selection>
+    <CRUDTable ref="tableRef" :columns="columns" :request="request" row-key="id" selection>
       <template #actions="{ row }">
         <el-button type="primary" link @click="openEdit(row)">编辑</el-button>
         <el-button type="danger" link @click="remove(row)">删除</el-button>
       </template>
-    </ConfigTable>
+    </CRUDTable>
 
     <el-dialog v-model="dialogVisible" :title="editing?.id ? '编辑租户' : '新增租户'" width="520px">
       <el-form label-width="88px">
@@ -96,4 +96,3 @@ onMounted(() => { tableRef.value?.refresh() })
 
 <style scoped>
 </style>
-
