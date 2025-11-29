@@ -70,14 +70,14 @@ function addChild(parent: Permission) {
     <template #header>
       <div class="flex items-center justify-between">
         <span>权限管理</span>
-        <div class="flex items中心 gap-2">
-          <el按钮 @click="refresh" :loading="loading">刷新</el按钮>
+        <div class="flex items-center gap-2">
+          <el-button @click="refresh" :loading="loading">刷新</el-button>
           <el-button type="primary" @click="openCreateRoot">新增根权限</el-button>
           <el-button type="primary" @click="openCreate">新增权限</el-button>
         </div>
       </div>
     </template>
-    <div class="mt-2">
+    <div class="mt-0">
       <el-tree :data="tree" node-key="id" default-expand-all :props="{ children: 'children', label: 'name' }" v-loading="loading">
         <template #default="{ data }">
           <div class="flex items-center justify-between w-full">

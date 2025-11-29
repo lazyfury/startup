@@ -12,6 +12,7 @@ import java.util.List;
 @Repository
 public interface PermissionRepository extends JpaRepository<Permission, Long>, JpaSpecificationExecutor<Permission> {
     boolean existsByCodeAndScopeTypeAndScopeId(String code, ScopeType scopeType, Long scopeId);
+    java.util.Optional<Permission> findByCodeAndScopeTypeAndScopeId(String code, ScopeType scopeType, Long scopeId);
     List<Permission> findAllByScopeTypeAndScopeId(ScopeType scopeType, Long scopeId);
     List<Permission> findAllByCodeStartingWithAndScopeTypeAndScopeId(String codePrefix, ScopeType scopeType, Long scopeId);
     List<Permission> findAllByCodeStartingWith(String codePrefix);

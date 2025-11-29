@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("tenant")
-@Tag(name = "组织管理", description = "组织(Tenant)管理接口")
+@Tag(name = "租户管理", description = "租户(Tenant)管理接口")
 public class TenantController extends CrudApiController<Tenant, Long, TenantRepository> {
     protected TenantController(TenantRepository repository) {
         super(repository);

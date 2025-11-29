@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import ConfigTable, { type Column } from '../components/ConfigTable.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, watch, nextTick } from 'vue'
 import { RoleApi } from '../api/apis/role'
 import { PermissionApi } from '../api/apis/permission'
 import { AclApi } from '../api/apis/acl'
 import type { Role, Permission } from '../api/types'
 import { SCOPE_TYPES } from '../api/types'
 
-const columns:Column[] = [
+const columns: Column[] = [
   { label: 'ID', prop: 'id', width: 80, align: 'center' },
   { label: '名称', prop: 'name', width: 160 },
   { label: '编码', prop: 'code', width: 160 },
@@ -32,19 +32,23 @@ const form = ref<Role>(emptyForm())
 
 const assignVisible = ref(false)
 const assignRole = ref<Role | null>(null)
-const allPermissions = ref<Permission[]>([])
+const permTree = ref<Permission[]>([])
 const selectedPermIds = ref<number[]>([])
 const permKeyword = ref('')
 const tagOptions = ref<string[]>([])
-const selectedTag = ref<string | null>(null)
-const filteredPerms = computed(() => {
-  const k = permKeyword.value.trim().toLowerCase()
-  const st = assignRole.value?.scopeType
-  const sid = assignRole.value?.scopeId ?? null
-  return allPermissions.value
-    .filter((p) => (!st || p.scopeType === st) && (sid === null || p.scopeId === sid))
-    .filter((p) => (p.name || '').toLowerCase().includes(k) || (p.code || '').toLowerCase().includes(k) || (p.tag || '').toLowerCase().includes(k))
-})
+const selectedTag = ref<string>('')
+const treeRef = ref<any>(null)
+
+const filterNode = (val: string, data: any) => {
+  const k = (val || '').trim().toLowerCase()
+  const kt = (selectedTag.value || '').trim().toLowerCase()
+  const s = `${data.name || ''} ${data.code || ''} ${data.tag || ''}`.toLowerCase()
+  const matchText = !k || s.includes(k)
+  const matchTag = !kt || ((data.tag || '').toLowerCase().includes(kt))
+  return matchText && matchTag
+}
+watch(permKeyword, (v) => treeRef.value?.filter(v))
+watch(selectedTag, () => treeRef.value?.filter(permKeyword.value))
 
 const openCreate = () => { editing.value = null; form.value = emptyForm(); dialogVisible.value = true }
 const openEdit = async (row: Role) => { const json = await RoleApi.get(row.id as number); form.value = json.data; editing.value = { id: row.id } as any; dialogVisible.value = true }
@@ -74,32 +78,23 @@ const tableRef = ref<{ refresh: () => Promise<void> } | null>(null)
 onMounted(() => { tableRef.value?.refresh() })
 async function openAssign(row: Role) {
   assignRole.value = row
-  const permsJson = await PermissionApi.list({ page: 0, size: 9999 })
-  allPermissions.value = (permsJson.data?.content as any[]) || []
+  const permsJson = await PermissionApi.tree({ scopeType: row.scopeType, scopeId: row.scopeId ?? null })
+  permTree.value = (permsJson.data as any[]) || []
   const rpJson = await AclApi.getRolePermissions(row.id as number)
   selectedPermIds.value = (rpJson.data || []).map((rp: any) => rp.permissionId)
   const tagsJson = await PermissionApi.tags({ scopeType: row.scopeType, scopeId: row.scopeId ?? null })
   tagOptions.value = tagsJson.data || []
   assignVisible.value = true
+  await nextTick()
+  treeRef.value?.setCheckedKeys(selectedPermIds.value)
 }
 
 async function submitAssign() {
   if (!assignRole.value?.id) return
+  selectedPermIds.value = treeRef.value?.getCheckedKeys(false) || []
   const res = await AclApi.replaceRolePermissions(assignRole.value.id as number, selectedPermIds.value)
   if (res.ok) {
     assignVisible.value = false
-  }
-}
-
-async function onTagChange(val: string | null) {
-  const st = assignRole.value?.scopeType
-  const sid = assignRole.value?.scopeId ?? null
-  if (val && val.length > 0) {
-    const json = await PermissionApi.searchByTag({ q: val, scopeType: st, scopeId: sid, limit: 500 })
-    allPermissions.value = json.data || []
-  } else {
-    const permsJson = await PermissionApi.list({ page: 0, size: 9999 })
-    allPermissions.value = (permsJson.data?.content as any[]) || []
   }
 }
 </script>
@@ -150,16 +145,28 @@ async function onTagChange(val: string | null) {
     </el-dialog>
     <el-dialog v-model="assignVisible" title="指派权限" width="640px">
       <div class="flex flex-col gap-2">
-        <div>角色：{{ assignRole?.name }}（{{ assignRole?.code }}）</div>
-        <div class="flex gap-2 items-center">
-          <el-input v-model="permKeyword" placeholder="搜索权限/编码/标签" />
-          <el-select v-model="selectedTag" placeholder="按标签筛选" clearable filterable style="min-width: 200px" @change="onTagChange">
-            <el-option v-for="t in tagOptions" :key="t" :label="t" :value="t" />
-          </el-select>
+        <div class="mb-4 font-bold">角色：{{ assignRole?.name }}（{{ assignRole?.code }}）</div>
+        <div class="gap-2 items-center">
+          <div>
+            <el-form-item label="搜索" label-position="top">
+              <el-input v-model="permKeyword" placeholder="搜索权限/编码/标签" />
+            </el-form-item>
+          </div>
+          <div>
+            <el-form-item label="标签" label-position="top">
+              <el-radio-group class="gap-2" v-model="selectedTag" size="small">
+                <el-radio border size="small" class="!mr-2" label="">全部</el-radio>
+                <el-radio border size="small" class="!mr-2" v-for="t in tagOptions" :key="t" :label="t">{{ t
+                  }}</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </div>
         </div>
-        <el-checkbox-group v-model="selectedPermIds">
-          <el-checkbox v-for="p in filteredPerms" :key="p.id" :label="p.id">{{ p.name }}（{{ p.code }}）<span v-if="p.tag" class="text-gray-500">【{{ p.tag }}】</span></el-checkbox>
-        </el-checkbox-group>
+        <el-card class="flex-1 p-0" shadow="never">
+          <el-tree ref="treeRef" :data="permTree" node-key="id" show-checkbox
+            :props="{ label: 'name', children: 'children' }" :filter-node-method="filterNode"
+            :default-checked-keys="selectedPermIds" />
+        </el-card>
       </div>
       <template #footer>
         <div class="flex justify-end gap-2">
@@ -171,7 +178,4 @@ async function onTagChange(val: string | null) {
   </el-card>
 </template>
 
-<style scoped>
-</style>
-
- 
+<style scoped></style>

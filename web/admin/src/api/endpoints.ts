@@ -23,6 +23,14 @@ export const API = {
     list: '/role',
     item: (id: number) => `/role/${id}`
   },
+  tenants: {
+    list: '/tenant',
+    item: (id: number) => `/tenant/${id}`
+  },
+  merchants: {
+    list: '/merchant',
+    item: (id: number) => `/merchant/${id}`
+  },
   permissions: {
     list: '/permission',
     item: (id: number) => `/permission/${id}`,

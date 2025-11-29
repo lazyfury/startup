@@ -1,6 +1,6 @@
 import { request } from '../http'
 import { API } from '../endpoints'
-import type { ApiResponse, MenuItem, Permission } from '../types'
+import type { ApiResponse, MenuItem, Permission, HttpResponseLike } from '../types'
 
 export const MenuApi = {
   async tree(): Promise<ApiResponse<MenuItem[]>> {
@@ -29,7 +29,7 @@ export const MenuApi = {
     })
     return res.json()
   },
-  async remove(id: number): Promise<Response> {
+  async remove(id: number): Promise<HttpResponseLike> {
     return request(API.menu.item(id), { method: 'DELETE' })
   },
   async getPermissions(id: number, params?: { scopeType?: string; scopeId?: number | null }): Promise<ApiResponse<Permission[]>> {

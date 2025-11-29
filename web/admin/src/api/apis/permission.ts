@@ -1,6 +1,6 @@
 import { request } from '../http'
 import { API } from '../endpoints'
-import type { ApiResponse, Page, Permission } from '../types'
+import type { ApiResponse, Page, Permission, HttpResponseLike } from '../types'
 
 export const PermissionApi = {
   async list(params: { page: number; size: number }): Promise<ApiResponse<Page<Permission>>> {
@@ -20,11 +20,14 @@ export const PermissionApi = {
     const res = await request(API.permissions.item(id), { method: 'PUT', body: JSON.stringify(body) })
     return res.json()
   },
-  async remove(id: number): Promise<Response> {
+  async remove(id: number): Promise<HttpResponseLike> {
     return request(API.permissions.item(id), { method: 'DELETE' })
   },
-  async tree(): Promise<ApiResponse<Permission[]>> {
-    const res = await request(API.permissions.tree)
+  async tree(params?: { scopeType?: string; scopeId?: number | null }): Promise<ApiResponse<Permission[]>> {
+    const qp: string[] = []
+    if (params?.scopeType) qp.push(`scopeType=${params.scopeType}`)
+    if (params?.scopeId !== undefined && params?.scopeId !== null) qp.push(`scopeId=${params.scopeId}`)
+    const res = await request(`${API.permissions.tree}${qp.length ? `?${qp.join('&')}` : ''}`)
     return res.json()
   },
   async tags(params?: { scopeType?: string; scopeId?: number | null }): Promise<ApiResponse<string[]>> {

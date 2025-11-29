@@ -89,3 +89,10 @@ export type Permission = {
   createdAt?: string
   updatedAt?: string
 }
+
+export type HttpResponseLike = {
+  ok: boolean
+  status: number
+  json: () => Promise<any>
+  text: () => Promise<string>
+}

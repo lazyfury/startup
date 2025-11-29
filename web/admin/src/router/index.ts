@@ -16,7 +16,9 @@ const routes: RouteRecordRaw[] = [
       { path: 'system/roles', name: 'roles', component: () => import('../views/Roles.vue'), meta: { title: '角色管理' } },
       { path: 'system/permissions', name: 'permissions', component: () => import('../views/Permissions.vue'), meta: { title: '权限管理' } },
       { path: 'system/menus', name: 'menus', component: () => import('../views/Menus.vue'), meta: { title: '菜单管理' } },
-      { path: 'system/config-groups', name: 'config-groups', component: () => import('../views/ConfigGroups.vue'), meta: { title: '配置分组' } }
+      { path: 'system/config-groups', name: 'config-groups', component: () => import('../views/ConfigGroups.vue'), meta: { title: '配置分组' } },
+      { path: 'system/tenants', name: 'tenants', component: () => import('../views/Tenants.vue'), meta: { title: '租户管理' } },
+      { path: 'system/merchants', name: 'merchants', component: () => import('../views/Merchants.vue'), meta: { title: '商户管理' } }
     ]
   },
   { path: '/:pathMatch(.*)*', redirect: () => (localStorage.getItem('token') ? '/' : '/login') }

@@ -1,6 +1,6 @@
 import { request } from '../http'
 import { API } from '../endpoints'
-import type { ApiResponse, Page, Role } from '../types'
+import type { ApiResponse, Page, Role, HttpResponseLike } from '../types'
 
 export const RoleApi = {
   async list(params: { page: number; size: number }): Promise<ApiResponse<Page<Role>>> {
@@ -20,7 +20,7 @@ export const RoleApi = {
     const res = await request(API.roles.item(id), { method: 'PUT', body: JSON.stringify(body) })
     return res.json()
   },
-  async remove(id: number): Promise<Response> {
+  async remove(id: number): Promise<HttpResponseLike> {
     return request(API.roles.item(id), { method: 'DELETE' })
   }
 }

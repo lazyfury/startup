@@ -1,6 +1,6 @@
 import { request } from '../http'
 import { API } from '../endpoints'
-import type { ApiResponse, Page, ConfigGroup } from '../types'
+import type { ApiResponse, Page, ConfigGroup, HttpResponseLike } from '../types'
 
 export const ConfigGroupApi = {
   async list(params: { page: number; size: number }): Promise<ApiResponse<Page<ConfigGroup>>> {
@@ -26,7 +26,7 @@ export const ConfigGroupApi = {
     })
     return res.json()
   },
-  async remove(id: number): Promise<Response> {
+  async remove(id: number): Promise<HttpResponseLike> {
     return request(API.configGroup.item(id), { method: 'DELETE' })
   }
 }

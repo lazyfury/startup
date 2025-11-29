@@ -44,6 +44,23 @@ public class MenuPermissionService {
         Menu menu = opt.get();
         String base = baseCode(menu);
         List<Permission> created = new ArrayList<>();
+
+        String allCode = base + ":all";
+        Permission parentAll;
+        if (permissionRepository.existsByCodeAndScopeTypeAndScopeId(allCode, scopeType, scopeId)) {
+            parentAll = permissionRepository.findByCodeAndScopeTypeAndScopeId(allCode, scopeType, scopeId).orElse(null);
+        } else {
+            Permission pAll = new Permission();
+            pAll.setName(menu.getName() + " all");
+            pAll.setCode(allCode);
+            pAll.setDescription("Auto parent for " + base);
+            pAll.setTag(menu.getCode());
+            pAll.setScopeType(scopeType != null ? scopeType : ScopeType.SYSTEM);
+            pAll.setScopeId(scopeId);
+            pAll.setStatus(Boolean.TRUE);
+            parentAll = permissionRepository.save(pAll);
+            created.add(parentAll);
+        }
         for (String act : actions) {
             if (act == null || act.isBlank()) continue;
             String code = base + ":" + act.trim().toLowerCase();
@@ -57,6 +74,9 @@ public class MenuPermissionService {
             p.setScopeType(scopeType != null ? scopeType : ScopeType.SYSTEM);
             p.setScopeId(scopeId);
             p.setStatus(Boolean.TRUE);
+            if (parentAll != null) {
+                p.setParentId(parentAll.getId());
+            }
             Permission saved = permissionRepository.save(p);
             created.add(saved);
         }
