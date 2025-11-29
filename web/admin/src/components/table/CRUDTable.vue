@@ -112,7 +112,7 @@ defineExpose({ refresh })
     <slot name="toolbar" :refresh="refresh">
       <div class="table-toolbar">
         <el-button :disabled="(loading ?? innerLoading) === true" @click="refresh">
-          <el-icon><Refresh /></el-icon>
+          <el-icon><IconEpRefresh /></el-icon>
           刷新
         </el-button>
       </div>
