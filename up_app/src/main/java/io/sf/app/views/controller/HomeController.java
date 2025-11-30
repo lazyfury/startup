@@ -82,7 +82,7 @@ public class HomeController {
             HttpSession session) throws Exception {
         try {
             userService.registerUser(
-                    new User(null, request.getUsername(), request.getPassword(), Boolean.TRUE, 1l, null, null, null));
+                    new User(null, request.getUsername(), request.getPassword(), Boolean.TRUE,Boolean.TRUE, 1l, null, null, null));
             return "redirect:/";
         } catch (DuplicateKeyException e) {
             redirectAttributes.addFlashAttribute("error", "用户名不可用");

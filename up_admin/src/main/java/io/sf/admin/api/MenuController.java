@@ -78,10 +78,11 @@ public class MenuController extends CrudApiController<Menu, Long, MenuRepository
     public JsonResult<List<Permission>> autoCreatePermissions(@NonNull @PathVariable Long id,
                                                              @RequestBody(required = false) Map<String, Object> body) {
         List<String> actions;
-        if (body != null && body.get("actions") instanceof List) {
-            actions = (List<String>) body.get("actions");
+        List<String> defaultActions = Arrays.asList("view", "create", "update", "delete");
+        if (body != null && body.get("actions") instanceof List<?> list) {
+            actions = list.stream().map(Object::toString).toList();
         } else {
-            actions = Arrays.asList("view", "create", "update", "delete");
+            actions = defaultActions;
         }
         ScopeType st = ScopeType.SYSTEM;
         Long sid = null;

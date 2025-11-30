@@ -35,11 +35,13 @@ public class RoleAssignService {
 
     @Transactional
     public boolean replaceRolePermissions(Long roleId, List<Long> permissionIds) {
+        Objects.requireNonNull(roleId, "roleId is null");
         var roleOpt = roleRepository.findById(roleId);
         if (roleOpt.isEmpty()) throw new IllegalArgumentException("role not found");
         Role role = roleOpt.get();
         var distinctPermissionIds = permissionIds.stream().filter(Objects::nonNull).distinct().toList();
         for (Long pid : distinctPermissionIds) {
+            Objects.requireNonNull(pid, "permissionId is null");
             var permOpt = permissionRepository.findById(pid);
             if (permOpt.isEmpty()) throw new IllegalArgumentException("permission not found");
             Permission p = permOpt.get();
@@ -67,11 +69,13 @@ public class RoleAssignService {
 
     @Transactional
     public boolean replaceUserRoles(Long userId, List<Long> roleIds) {
+        Objects.requireNonNull(userId, "userId is null");
         var userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) throw new IllegalArgumentException("user not found");
         User user = userOpt.get();
         var distinctRoleIds = roleIds.stream().filter(Objects::nonNull).distinct().toList();
         for (Long rid : distinctRoleIds) {
+            Objects.requireNonNull(rid, "roleId is null");
             var roleOpt = roleRepository.findById(rid);
             if (roleOpt.isEmpty()) throw new IllegalArgumentException("role not found");
             Role r = roleOpt.get();
