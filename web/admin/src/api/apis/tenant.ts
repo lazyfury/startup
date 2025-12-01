@@ -1,4 +1,4 @@
-import { request } from '../http'
+import { http } from '../http'
 import { API } from '../endpoints'
 import type { ApiResponse, Page } from '../types'
 
@@ -14,24 +14,22 @@ export type Tenant = {
 
 export const TenantApi = {
   async list(params: { page: number; size: number }): Promise<ApiResponse<Page<Tenant>>> {
-    const qp = `?page=${params.page}&size=${params.size}`
-    const res = await request(`${API.tenants.list}${qp}`)
-    return res.json()
+    const { data } = await http.get(API.tenants.list, { params })
+    return data
   },
   async get(id: number): Promise<ApiResponse<Tenant>> {
-    const res = await request(API.tenants.item(id))
-    return res.json()
+    const { data } = await http.get(API.tenants.item(id))
+    return data
   },
   async create(body: Tenant): Promise<ApiResponse<Tenant>> {
-    const res = await request(API.tenants.list, { method: 'POST', body: JSON.stringify(body) })
-    return res.json()
+    const { data } = await http.post(API.tenants.list, body)
+    return data
   },
   async update(id: number, body: Tenant): Promise<ApiResponse<Tenant>> {
-    const res = await request(API.tenants.item(id), { method: 'PUT', body: JSON.stringify(body) })
-    return res.json()
+    const { data } = await http.put(API.tenants.item(id), body)
+    return data
   },
   async remove(id: number) {
-    return request(API.tenants.item(id), { method: 'DELETE' })
+    return http.delete(API.tenants.item(id))
   }
 }
-

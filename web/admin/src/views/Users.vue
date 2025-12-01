@@ -1,16 +1,26 @@
-<script setup lang="ts">
+<script setup lang="tsx">
 import CRUDTable, { type Column } from '../components/table/CRUDTable.vue'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElSwitch } from 'element-plus'
 import { onMounted, ref, computed } from 'vue'
 import { AdminUserApi } from '../api/apis/admin-user'
 import { RoleApi } from '../api/apis/role'
 import { AclApi } from '../api/apis/acl'
 import type { AdminUser } from '../api/types'
+import View from '../components/View.vue'
 
-const columns:Column[] = [
+const columns: Column[] = [
   { label: 'ID', prop: 'id', width: 80, align: 'center' },
-  { label: '账号', prop: 'username', width: 160,className:"font-bold text-15px" },
-  { label: '启用', prop: 'enabled', width: 80, align: 'center', valueType: 'bool' },
+  { label: '账号', prop: 'username', width: 160, className: "font-bold text-15px" },
+  {
+    label: '启用', prop: 'enabled', width: 80, align: 'center', valueType: 'bool', component: View,
+    render: (value: boolean, row: any, _index: number) => h(ElSwitch, {
+      modelValue: value, activeValue: true, inactiveValue: false, activeText: "", inactiveText: "",
+      "onUpdate:modelValue": (v: any) => AdminUserApi.update(row.id, { ...row, enabled: v }).finally(() => {
+        ElMessage.success("操作成功")
+        tableRef.value?.refresh()
+      })
+    })
+  },
   { label: '租户', prop: 'tenantName', width: 160 },
   { label: '角色', slot: 'roles' },
   { label: '更新于', prop: 'updatedAt' },
@@ -31,7 +41,7 @@ const showResetPwd = ref(false)
 
 const allRoles = ref<{ id: number; name: string; code: string; scopeType?: string; scopeId?: number | null }[]>([])
 const loadRoles = async () => {
-  const json = await RoleApi.list({ page: 0, size: 9999 })
+  const json = await RoleApi.list({ page: 0, size: 9999, scopeId: form.value.tenantId })
   allRoles.value = (json.data?.content as any[]) || []
 }
 
@@ -44,6 +54,10 @@ const roleMap = computed(() => {
 const roleLabel = (id: number) => {
   const r = roleMap.value.get(Number(id))
   return r ? `${r.name}（${r.code}）` : String(id)
+}
+
+const refreshRoles = async () => {
+  if (form.value.tenantId) await loadRoles()
 }
 
 const openCreate = async () => { editing.value = null; form.value = emptyForm(); await loadRoles(); dialogVisible.value = true }
@@ -84,8 +98,9 @@ const submit = async () => {
 const remove = async (row: AdminUser) => {
   await ElMessageBox.confirm('删除后不可恢复，是否继续？', '提示', { type: 'warning' })
   const res = await AdminUserApi.remove(row.id as number)
-  const json = await res.json().catch(() => null)
-  ElMessage[res.ok ? 'success' : 'error'](json?.message || (res.ok ? '操作成功' : '操作失败'))
+  const ok = res.status >= 200 && res.status < 300
+  const msg = (res.data as any)?.message || (ok ? '操作成功' : '操作失败')
+  ElMessage[ok ? 'success' : 'error'](msg)
   await tableRef.value?.refresh()
 }
 
@@ -104,7 +119,9 @@ onMounted(async () => { await loadRoles(); await tableRef.value?.refresh() })
 
     <CRUDTable ref="tableRef" :columns="columns" :request="request" row-key="id" selection>
       <template #roles="{ row }">
-        <el-tag v-for="r in row.roles || []" :key="r" size="small" class="mr-1">{{ roleLabel(r) }}</el-tag>
+        <div>
+          <el-tag v-for="r in row.roles || []" :key="r" size="small" class="mr-1">{{ roleLabel(r) }}</el-tag>
+        </div>
       </template>
       <template #actions="{ row }">
         <el-button type="primary" link @click="openEdit(row)">编辑</el-button>
@@ -127,7 +144,7 @@ onMounted(async () => { await loadRoles(); await tableRef.value?.refresh() })
           <el-checkbox v-model="form.isStaff">是</el-checkbox>
         </el-form-item>
         <el-form-item label="租户ID">
-          <el-input-number v-model="form.tenantId" :min="0" :max="999999999" :controls="false" />
+          <el-input-number v-model="form.tenantId" @change="refreshRoles" :min="0" :max="999999999" :controls="false" />
         </el-form-item>
         <el-form-item v-if="editing?.id" label="重置密码">
           <div class="flex items-center gap-2 w-full">
@@ -136,7 +153,8 @@ onMounted(async () => { await loadRoles(); await tableRef.value?.refresh() })
           </div>
         </el-form-item>
         <el-form-item label="角色">
-          <el-select v-model="form.roles" multiple filterable collapse-tags collapse-tags-tooltip placeholder="请选择角色" style="width: 100%">
+          <el-select v-model="form.roles" multiple filterable collapse-tags collapse-tags-tooltip placeholder="请选择角色"
+            style="width: 100%">
             <el-option v-for="r in allRoles" :key="r.id" :label="`${r.name}（${r.code}）`" :value="Number(r.id)" />
           </el-select>
         </el-form-item>
@@ -151,5 +169,4 @@ onMounted(async () => { await loadRoles(); await tableRef.value?.refresh() })
   </el-card>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

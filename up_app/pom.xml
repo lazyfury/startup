@@ -10,6 +10,7 @@
     </parent>
 
     <artifactId>up_app</artifactId>
+    <packaging>jar</packaging>
 
 
     <dependencies>
@@ -85,5 +86,4 @@
             <version>2.8.5</version>
         </dependency>
     </dependencies>
-
 </project>

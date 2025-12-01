@@ -1,48 +1,37 @@
-import { request } from '../http'
+import { http } from '../http'
 import { API } from '../endpoints'
-import type { ApiResponse, Page, Permission, HttpResponseLike } from '../types'
+import type { ApiResponse, Page, Permission } from '../types'
 
 export const PermissionApi = {
   async list(params: { page: number; size: number }): Promise<ApiResponse<Page<Permission>>> {
-    const qp = `?page=${params.page}&size=${params.size}`
-    const res = await request(`${API.permissions.list}${qp}`)
-    return res.json()
+    const { data } = await http.get(API.permissions.list, { params })
+    return data
   },
   async get(id: number): Promise<ApiResponse<Permission>> {
-    const res = await request(API.permissions.item(id))
-    return res.json()
+    const { data } = await http.get(API.permissions.item(id))
+    return data
   },
   async create(body: Permission): Promise<ApiResponse<Permission>> {
-    const res = await request(API.permissions.list, { method: 'POST', body: JSON.stringify(body) })
-    return res.json()
+    const { data } = await http.post(API.permissions.list, body)
+    return data
   },
   async update(id: number, body: Permission): Promise<ApiResponse<Permission>> {
-    const res = await request(API.permissions.item(id), { method: 'PUT', body: JSON.stringify(body) })
-    return res.json()
+    const { data } = await http.put(API.permissions.item(id), body)
+    return data
   },
-  async remove(id: number): Promise<HttpResponseLike> {
-    return request(API.permissions.item(id), { method: 'DELETE' })
+  async remove(id: number) {
+    return http.delete(API.permissions.item(id))
   },
   async tree(params?: { scopeType?: string; scopeId?: number | null }): Promise<ApiResponse<Permission[]>> {
-    const qp: string[] = []
-    if (params?.scopeType) qp.push(`scopeType=${params.scopeType}`)
-    if (params?.scopeId !== undefined && params?.scopeId !== null) qp.push(`scopeId=${params.scopeId}`)
-    const res = await request(`${API.permissions.tree}${qp.length ? `?${qp.join('&')}` : ''}`)
-    return res.json()
+    const { data } = await http.get(API.permissions.tree, { params })
+    return data
   },
   async tags(params?: { scopeType?: string; scopeId?: number | null }): Promise<ApiResponse<string[]>> {
-    const qp: string[] = []
-    if (params?.scopeType) qp.push(`scopeType=${params.scopeType}`)
-    if (params?.scopeId !== undefined && params?.scopeId !== null) qp.push(`scopeId=${params.scopeId}`)
-    const res = await request(`${API.permissions.tags}${qp.length ? `?${qp.join('&')}` : ''}`)
-    return res.json()
+    const { data } = await http.get(API.permissions.tags, { params })
+    return data
   },
   async searchByTag(params: { q: string; scopeType?: string; scopeId?: number | null; limit?: number }): Promise<ApiResponse<Permission[]>> {
-    const qp: string[] = [`q=${encodeURIComponent(params.q || '')}`]
-    if (params.scopeType) qp.push(`scopeType=${params.scopeType}`)
-    if (params.scopeId !== undefined && params.scopeId !== null) qp.push(`scopeId=${params.scopeId}`)
-    if (params.limit) qp.push(`limit=${params.limit}`)
-    const res = await request(`${API.permissions.searchByTag}?${qp.join('&')}`)
-    return res.json()
+    const { data } = await http.get(API.permissions.searchByTag, { params })
+    return data
   }
 }

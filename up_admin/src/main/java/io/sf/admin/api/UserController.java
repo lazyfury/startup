@@ -1,15 +1,16 @@
 package io.sf.admin.api;
 
 import io.sf.modules.auth.entity.User;
+import io.sf.admin.api.dto.UserCreateDto;
 import io.sf.modules.auth.repository.UserRepository;
 import io.sf.modules.acl.repository.UserRoleRepository;
 import io.sf.modules.acl.entity.UserRole;
 import io.sf.modules.acl.service.RoleAssignService;
+import io.sf.modules.auth.service.impl.UserService;
 import io.sf.modules.tenant.entity.Tenant;
 import io.sf.modules.tenant.repository.TenantRepository;
 import io.sf.modules.merchant.entity.Merchant;
 import io.sf.modules.merchant.repository.MerchantRepository;
-import io.sf.utils.crud.CrudApiController;
 import io.sf.utils.crud.EnhancedDynamicDSL;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,99 +26,79 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("user")
 @Tag(name = "用户权限/用户管理", description = "用户管理接口（Admin）")
-public class UserController extends CrudApiController<User, Long, UserRepository> {
-    protected UserController(UserRepository repository) {
-        super(repository);
-    }
+public class UserController {
+    private final UserRepository repository;
 
-    @Override
-    protected Class<User> entityClass() {
-        return User.class;
+    public UserController(UserRepository repository) {
+        this.repository = repository;
     }
 
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private UserRoleRepository userRoleRepository;
 
     @Autowired
-    private RoleAssignService roleAssignService;
-
-    @Autowired
-    private TenantRepository tenantRepository;
-
-    @Autowired
-    private MerchantRepository merchantRepository;
+    private UserService userService;
 
     @PostMapping("")
     @Operation(summary = "创建用户（自动加密密码）")
-    public JsonResult<User> create(@NonNull @RequestBody User body) {
+    public JsonResult<Integer> create(@NonNull @RequestBody UserCreateDto body) {
         if (body.getPassword() == null || body.getPassword().isBlank()) {
-            return new JsonResult<User>(HttpStatus.BAD_REQUEST.value(), null, "password is required");
+            return new JsonResult<Integer>(HttpStatus.BAD_REQUEST.value(), 0, "password is required");
         }
-        body.setPassword(passwordEncoder.encode(body.getPassword()));
-        User saved = repository.save(body);
-        return new JsonResult<User>(HttpStatus.OK, saved);
+        User entity = new User();
+        entity.setUsername(body.getUsername());
+        entity.setPassword(passwordEncoder.encode(body.getPassword()));
+        entity.setEnabled(body.getEnabled() == null ? Boolean.TRUE : body.getEnabled());
+        entity.setIsStaff(body.getIsStaff() == null ? Boolean.FALSE : body.getIsStaff());
+        entity.setTenantId(body.getTenantId());
+        entity.setMerchantId(body.getMerchantId());
+        Integer saved = userService.registerUser(entity);
+        return new JsonResult<Integer>(HttpStatus.OK, saved);
     }
 
-    @Override
     @GetMapping("")
     @Operation(summary = "列表 + 动态查询（包含角色ID）")
     public JsonResult<Page<User>> list(@NonNull Pageable pageable, @RequestParam java.util.Map<String, String> params) {
         Specification<User> spec = new EnhancedDynamicDSL<>(User.class, params).build();
         Page<User> result = repository.findAll(spec, pageable);
-        List<User> list = result.getContent();
-        List<Long> userIds = list.stream().map(User::getId).filter(java.util.Objects::nonNull).toList();
-        List<UserRole> links = userIds.isEmpty() ? java.util.Collections.emptyList() : userRoleRepository.findAllByUserIdIn(userIds);
-        java.util.Map<Long, java.util.List<Long>> userRolesMap = new java.util.HashMap<>();
-        for (UserRole ur : links) {
-            userRolesMap.computeIfAbsent(ur.getUserId(), k -> new java.util.ArrayList<>()).add(ur.getRoleId());
-        }
-        java.util.List<Long> tenantIds = list.stream().map(User::getTenantId).filter(java.util.Objects::nonNull).distinct().toList();
-        java.util.Map<Long, String> tenantNameMap = tenantIds.isEmpty() ? java.util.Collections.emptyMap() : tenantRepository.findAllById(tenantIds).stream().collect(java.util.stream.Collectors.toMap(Tenant::getId, Tenant::getName));
-        java.util.List<Long> merchantIds = list.stream().map(User::getMerchantId).filter(java.util.Objects::nonNull).distinct().toList();
-        java.util.Map<Long, String> merchantNameMap = merchantIds.isEmpty() ? java.util.Collections.emptyMap() : merchantRepository.findAllById(merchantIds).stream().collect(java.util.stream.Collectors.toMap(Merchant::getId, Merchant::getName));
-
-        for (User u : list) {
-            if (u.getId() == null) continue;
-            u.setRoles(userRolesMap.getOrDefault(u.getId(), java.util.Collections.emptyList()));
-            if (u.getTenantId() != null) u.setTenantName(tenantNameMap.get(u.getTenantId()));
-            if (u.getMerchantId() != null) u.setMerchantName(merchantNameMap.get(u.getMerchantId()));
-        }
+        userService.enrichUsers(result.getContent());
         return new JsonResult<Page<User>>(HttpStatus.OK, result);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(summary = "查询单条（包含角色ID与名称）")
+    public JsonResult<User> getById(@NonNull @PathVariable Long id) {
+        var existingOpt = repository.findById(id);
+        if (existingOpt.isEmpty()) {
+            return new JsonResult<User>(HttpStatus.NOT_FOUND, null);
+        }
+        User u = existingOpt.get();
+        return new JsonResult<User>(HttpStatus.OK, userService.enrichUser(u));
     }
 
     @PutMapping("/{id}")
     @Operation(summary = "更新用户（可同时提交角色ID，保留或加密密码）")
     public JsonResult<User> update(@NonNull @PathVariable Long id, @NonNull @RequestBody User body) {
-        var existingOpt = repository.findById(id);
-        if (existingOpt.isEmpty()) {
+        try {
+            User saved = userService.updateUser(id, body, body.getRoles());
+            return new JsonResult<User>(HttpStatus.OK, saved);
+        } catch (NoSuchElementException e) {
             return new JsonResult<User>(HttpStatus.NOT_FOUND, null);
+        } catch (Exception e) {
+            return new JsonResult<User>(HttpStatus.BAD_REQUEST.value(), null, e.getMessage());
         }
-        User existing = existingOpt.get();
-        if (body.getPassword() == null || body.getPassword().isBlank()) {
-            body.setPassword(existing.getPassword());
-        } else {
-            String raw = body.getPassword();
-            if (!(raw.startsWith("$2a$") || raw.startsWith("$2b$") || raw.startsWith("$2y$"))) {
-                body.setPassword(passwordEncoder.encode(raw));
-            }
-        }
-        body.setId(id);
-        User saved = repository.save(body);
-        List<Long> roleIds = body.getRoles();
-        if (roleIds != null) {
-            try {
-                roleAssignService.replaceUserRoles(id, roleIds);
-            } catch (Exception e) {
-                return new JsonResult<User>(HttpStatus.BAD_REQUEST.value(), null, e.getMessage());
-            }
-        }
-        return new JsonResult<User>(HttpStatus.OK, saved);
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "删除用户")
+    public JsonResult<Void> delete(@NonNull @PathVariable Long id) {
+        userService.deleteUser(id);
+        return new JsonResult<Void>(HttpStatus.NO_CONTENT, null);
     }
 }

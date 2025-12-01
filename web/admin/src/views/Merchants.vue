@@ -44,8 +44,9 @@ const submit = async () => {
 const remove = async (row: Merchant) => {
   await ElMessageBox.confirm('删除后不可恢复，是否继续？', '提示', { type: 'warning' })
   const res = await MerchantApi.remove(row.id as number)
-  const json = await res.json().catch(() => null)
-  ElMessage[res.ok ? 'success' : 'error'](json?.message || (res.ok ? '操作成功' : '操作失败'))
+  const ok = res.status >= 200 && res.status < 300
+  const msg = (res.data as any)?.message || (ok ? '操作成功' : '操作失败')
+  ElMessage[ok ? 'success' : 'error'](msg)
   await tableRef.value?.refresh()
 }
 

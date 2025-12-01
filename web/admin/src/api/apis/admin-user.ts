@@ -1,26 +1,25 @@
-import { request } from '../http'
+import { http } from '../http'
 import { API } from '../endpoints'
-import type { ApiResponse, Page, AdminUser, HttpResponseLike } from '../types'
+import type { ApiResponse, Page, AdminUser } from '../types'
 
 export const AdminUserApi = {
   async list(params: { page: number; size: number }): Promise<ApiResponse<Page<AdminUser>>> {
-    const qp = `?page=${params.page}&size=${params.size}`
-    const res = await request(`${API.users.list}${qp}`)
-    return res.json()
+    const { data } = await http.get(API.users.list, { params: { page: params.page, size: params.size } })
+    return data
   },
   async get(id: number): Promise<ApiResponse<AdminUser>> {
-    const res = await request(API.users.item(id))
-    return res.json()
+    const { data } = await http.get(API.users.item(id))
+    return data
   },
   async create(body: AdminUser): Promise<ApiResponse<AdminUser>> {
-    const res = await request(API.users.list, { method: 'POST', body: JSON.stringify(body) })
-    return res.json()
+    const { data } = await http.post(API.users.list, body)
+    return data
   },
   async update(id: number, body: AdminUser): Promise<ApiResponse<AdminUser>> {
-    const res = await request(API.users.item(id), { method: 'PUT', body: JSON.stringify(body) })
-    return res.json()
+    const { data } = await http.put(API.users.item(id), body)
+    return data
   },
-  async remove(id: number): Promise<HttpResponseLike> {
-    return request(API.users.item(id), { method: 'DELETE' })
+  async remove(id: number) {
+    return http.delete(API.users.item(id))
   }
 }

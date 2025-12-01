@@ -1,21 +1,18 @@
-import { request } from '../http'
+import { http } from '../http'
 import { API } from '../endpoints'
 import type { ApiResponse, UserProfile } from '../types'
 
 export const UserApi = {
   async login(payload: { username: string; password: string }): Promise<ApiResponse<{ token: string }>> {
-    const res = await request(API.auth.login, {
-      method: 'POST',
-      body: JSON.stringify(payload)
-    })
-    return res.json()
+    const { data } = await http.post(API.auth.login, payload)
+    return data
   },
   async profile(): Promise<ApiResponse<UserProfile>> {
-    const res = await request(API.auth.profile)
-    return res.json()
+    const { data } = await http.get(API.auth.profile)
+    return data
   },
   async createAdminDebug(): Promise<ApiResponse<any>> {
-    const res = await request(API.auth.createAdminDebug, { method: 'POST' })
-    return res.json()
+    const { data } = await http.post(API.auth.createAdminDebug)
+    return data
   }
 }

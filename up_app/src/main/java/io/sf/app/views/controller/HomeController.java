@@ -5,7 +5,7 @@ import io.sf.modules.auth.entity.User;
 import io.sf.modules.auth.service.IUserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -84,7 +84,7 @@ public class HomeController {
             userService.registerUser(
                     new User(null, request.getUsername(), request.getPassword(), Boolean.TRUE,Boolean.TRUE, 1l, null, null, null));
             return "redirect:/";
-        } catch (DuplicateKeyException e) {
+        } catch (DataIntegrityViolationException e) {
             redirectAttributes.addFlashAttribute("error", "用户名不可用");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());

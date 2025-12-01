@@ -38,9 +38,9 @@ security:
   jwt:
     # 开发环境示例密钥（请在生产环境替换为更安全的密钥）
     secret: 0123456789abcdef0123456789abcdef0123456789abcdef01234567891abcdef
-    ttlMillis: 3600000
+    expiration: 3600000
 
-  isLoginFormEnabled: true
+  loginFormEnabled: true
   logoutEnabled: true
   whitelist:
     - /api/auth/login
@@ -48,11 +48,14 @@ security:
     - /hqjh/getUrl
     - /api/hqjh/getUrl
     - /api/hqjh/jump
+    - /
+    - /error
+    - /login
   
 
 # 日志配置
 logging:
-  level:
+  level: 
     io.sf: INFO
     org.springframework: INFO
     org.springframework.security: DEBUG

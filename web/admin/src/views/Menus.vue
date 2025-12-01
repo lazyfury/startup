@@ -80,8 +80,10 @@ const submit = async () => {
 const remove = async (node: MenuItem) => {
   await ElMessageBox.confirm('删除后不可恢复，是否继续？', '提示', { type: 'warning' })
   const res = await MenuApi.remove(node.id as number)
-  if (res.status === 204 || res.ok) { ElMessage.success('删除成功'); await refresh() }
-  else { const json = await res.json().catch(() => null); ElMessage.error(json?.message || '删除失败') }
+  const ok = res.status === 204 || (res.status >= 200 && res.status < 300)
+  const msg = (res.data as any)?.message || (ok ? '删除成功' : '删除失败')
+  ElMessage[ok ? 'success' : 'error'](msg)
+  if (ok) await refresh()
 }
 
 const openAutoPerm = (node: MenuItem) => {

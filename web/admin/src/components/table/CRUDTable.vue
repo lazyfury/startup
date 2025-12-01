@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, type VNode, defineComponent } from 'vue'
 import TextCell from '../cells/TextCell.vue'
 import BoolCell from '../cells/BoolCell.vue'
 import NumberCell from '../cells/NumberCell.vue'
@@ -16,7 +16,7 @@ export type Column = {
   slot?: string
   valueType?: 'text' | 'number' | 'price' | 'bool'
   formatOptions?: { decimals?: number; currency?: string; locale?: string }
-  render?: (value: any, row: any, index: number) => any
+  render?: (value: any, row: any, index: number) => VNode
   component?: any,
   className?:string
 }
@@ -55,7 +55,21 @@ const dataSource = computed(() => (useRemote.value ? innerData.value : props.dat
 
 const getValue = (row: any, path?: string) => {
   if (!path) return row
-  return String(path).split('.').reduce((acc: any, k: string) => (acc ? acc[k] : undefined), row) || "-"
+  let value = row
+  let keys = String(path).split('.')
+  for (let key of keys) {
+    if (value === undefined) break
+    value = value[key]
+  }
+  return value
+}
+
+const getValueWithDef = (row: any, path?: string, def: any = "-") => {
+  let val = getValue(row, path)
+  if (val instanceof Boolean) return val
+  if (val instanceof Number) return val
+  if (val instanceof Date) return val.toLocaleString()
+  return val !== undefined ? val : def
 }
 
 const resolveCell = (c: Column) => {
@@ -69,6 +83,13 @@ const resolveCell = (c: Column) => {
   }
 }
 
+const VNodeRenderer = defineComponent<{ node: VNode }>({
+  name: 'VNodeRenderer',
+  props: { node: { type: Object, required: true } },
+  setup(props) { return () => props.node },
+  render() { return this.node }
+})
+ 
 const fetch = async () => {
   if (!props.request) return
   innerLoading.value = true
@@ -139,17 +160,20 @@ defineExpose({ refresh })
         :sortable="c.sortable"
       >
         <template v-if="c.slot" #default="scope">
-          <slot :name="c.slot" v-bind="scope" ></slot>
+          <slot :name="c.slot" v-bind="scope" >
+            {{ getValueWithDef(scope.row, c.prop) }}
+          </slot>
         </template>
         <template v-else #default="scope">
           <component
             :is="resolveCell(c)"
-            :value="getValue(scope.row, c.prop)"
+            :value="getValueWithDef(scope.row, c.prop)"
             :options="c.formatOptions"
             :row="scope.row"
-            :index="scope.$index"
+          :index="scope.$index"
           >
-          {{ c.render ? c.render?.(getValue(scope.row, c.prop), scope.row, scope.$index) : getValue(scope.row,c.prop) }}
+          <VNodeRenderer v-if="c.render" :node="c.render(getValueWithDef(scope.row, c.prop), scope.row, scope.$index)" />
+          <template v-else>{{ getValueWithDef(scope.row, c.prop) }}</template>
         </component>
         </template>
       </el-table-column>

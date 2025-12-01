@@ -70,12 +70,9 @@ const submit = async () => {
 const remove = async (row: ConfigGroup) => {
   await ElMessageBox.confirm('禁用将使该分组失效，是否继续？', '提示', { type: 'warning' })
   const res = await ConfigApi.deactivateGroup(row.id as number)
-  const json = await res.json().catch(() => null)
-  if (res.ok) {
-    ElMessage.success('禁用成功')
-  } else {
-    ElMessage.error(json?.message || '禁用失败')
-  }
+  const ok = res.status >= 200 && res.status < 300
+  const msg = (res.data as any)?.message || (ok ? '禁用成功' : '禁用失败')
+  ElMessage[ok ? 'success' : 'error'](msg)
   await tableRef.value?.refresh()
 }
 

@@ -1,32 +1,25 @@
-import { request } from '../http'
+import { http } from '../http'
 import { API } from '../endpoints'
-import type { ApiResponse, Page, ConfigGroup, HttpResponseLike } from '../types'
+import type { ApiResponse, Page, ConfigGroup } from '../types'
 
 export const ConfigGroupApi = {
   async list(params: { page: number; size: number }): Promise<ApiResponse<Page<ConfigGroup>>> {
-    const qp = `?page=${params.page}&size=${params.size}`
-    const res = await request(`${API.configGroup.list}${qp}`)
-    return res.json()
+    const { data } = await http.get(API.configGroup.list, { params })
+    return data
   },
   async get(id: number): Promise<ApiResponse<ConfigGroup>> {
-    const res = await request(API.configGroup.item(id))
-    return res.json()
+    const { data } = await http.get(API.configGroup.item(id))
+    return data
   },
   async create(body: ConfigGroup): Promise<ApiResponse<ConfigGroup>> {
-    const res = await request(API.configGroup.list, {
-      method: 'POST',
-      body: JSON.stringify(body)
-    })
-    return res.json()
+    const { data } = await http.post(API.configGroup.list, body)
+    return data
   },
   async update(id: number, body: ConfigGroup): Promise<ApiResponse<ConfigGroup>> {
-    const res = await request(API.configGroup.item(id), {
-      method: 'PUT',
-      body: JSON.stringify(body)
-    })
-    return res.json()
+    const { data } = await http.put(API.configGroup.item(id), body)
+    return data
   },
-  async remove(id: number): Promise<HttpResponseLike> {
-    return request(API.configGroup.item(id), { method: 'DELETE' })
+  async remove(id: number) {
+    return http.delete(API.configGroup.item(id))
   }
 }

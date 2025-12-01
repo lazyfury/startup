@@ -49,7 +49,6 @@ declare module 'vue' {
     ElTree: typeof import('element-plus/es')['ElTree']
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     IconEpRefresh: typeof import('~icons/ep/refresh')['default']
-    IconMdiRefresh: typeof import('~icons/mdi/refresh')['default']
     IconPicker: typeof import('./components/IconPicker.vue')['default']
     IconUilApple: typeof import('~icons/uil/apple')['default']
     NumberCell: typeof import('./components/cells/NumberCell.vue')['default']
@@ -57,6 +56,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TextCell: typeof import('./components/cells/TextCell.vue')['default']
+    View: typeof import('./components/View.vue')['default']
   }
   export interface GlobalDirectives {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']

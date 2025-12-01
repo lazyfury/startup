@@ -1,4 +1,4 @@
-import { request } from '../http'
+import { http } from '../http'
 import { API } from '../endpoints'
 import type { ApiResponse, Page } from '../types'
 
@@ -14,24 +14,22 @@ export type Merchant = {
 
 export const MerchantApi = {
   async list(params: { page: number; size: number }): Promise<ApiResponse<Page<Merchant>>> {
-    const qp = `?page=${params.page}&size=${params.size}`
-    const res = await request(`${API.merchants.list}${qp}`)
-    return res.json()
+    const { data } = await http.get(API.merchants.list, { params })
+    return data
   },
   async get(id: number): Promise<ApiResponse<Merchant>> {
-    const res = await request(API.merchants.item(id))
-    return res.json()
+    const { data } = await http.get(API.merchants.item(id))
+    return data
   },
   async create(body: Merchant): Promise<ApiResponse<Merchant>> {
-    const res = await request(API.merchants.list, { method: 'POST', body: JSON.stringify(body) })
-    return res.json()
+    const { data } = await http.post(API.merchants.list, body)
+    return data
   },
   async update(id: number, body: Merchant): Promise<ApiResponse<Merchant>> {
-    const res = await request(API.merchants.item(id), { method: 'PUT', body: JSON.stringify(body) })
-    return res.json()
+    const { data } = await http.put(API.merchants.item(id), body)
+    return data
   },
   async remove(id: number) {
-    return request(API.merchants.item(id), { method: 'DELETE' })
+    return http.delete(API.merchants.item(id))
   }
 }
-
