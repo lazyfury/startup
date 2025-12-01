@@ -1,5 +1,6 @@
 package io.sf.admin.api;
 
+import io.sf.admin.api.dto.UserUpdateDto;
 import io.sf.modules.auth.entity.User;
 import io.sf.admin.api.dto.UserCreateDto;
 import io.sf.modules.auth.repository.UserRepository;
@@ -84,9 +85,16 @@ public class UserController {
 
     @PutMapping("/{id}")
     @Operation(summary = "更新用户（可同时提交角色ID，保留或加密密码）")
-    public JsonResult<User> update(@NonNull @PathVariable Long id, @NonNull @RequestBody User body) {
+    public JsonResult<User> update(@NonNull @PathVariable Long id, @NonNull @RequestBody UserUpdateDto body) {
         try {
-            User saved = userService.updateUser(id, body, body.getRoles());
+            User entity = new User();
+            entity.setUsername(body.getUsername());
+            entity.setPassword(body.getPassword() == null || body.getPassword().isBlank() ? null : passwordEncoder.encode(body.getPassword()));
+            entity.setEnabled(body.getEnabled());
+            entity.setIsStaff(body.getIsStaff());
+            entity.setTenantId(body.getTenantId());
+            entity.setMerchantId(body.getMerchantId());
+            User saved = userService.updateUser(id, entity, body.getRoles());
             return new JsonResult<User>(HttpStatus.OK, saved);
         } catch (NoSuchElementException e) {
             return new JsonResult<User>(HttpStatus.NOT_FOUND, null);

@@ -72,6 +72,7 @@ export type Role = {
   code: string
   scopeType?: ScopeType
   scopeId?: number | null
+  hardcoded?: boolean
   status?: boolean
   createdAt?: string
   updatedAt?: string

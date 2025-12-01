@@ -14,6 +14,7 @@ const columns: Column[] = [
   { label: '编码', prop: 'code', width: 160,component:ElTag },
   { label: '范围类型', prop: 'scopeType', width: 120,component:ElTag },
   { label: '范围ID', prop: 'scopeId', width: 100, align: 'center' },
+  { label: '硬编码', prop: 'hardcoded', width: 80, align: 'center', valueType: 'bool' },
   { label: '启用', prop: 'status', width: 80, align: 'center' },
   { label: '更新于', prop: 'updatedAt', },
   { label: '操作', slot: 'actions', width: 280, align: 'center' }
@@ -134,6 +135,10 @@ async function submitAssign() {
         </el-form-item>
         <el-form-item label="启用">
           <el-switch v-model="form.status" />
+        </el-form-item>
+        <el-form-item label="硬编码">
+          <el-switch v-model="form.hardcoded" />
+          <el-text class="!ml-2 inline-block">是否为硬编码角色，硬编码角色不应该被删除</el-text>
         </el-form-item>
       </el-form>
       <template #footer>

@@ -46,14 +46,14 @@ const loadRoles = async () => {
 }
 
 const roleMap = computed(() => {
-  const m = new Map<number, { id: number; name: string; code: string }>()
+  const m = new Map<number, { id: number; name: string; code: string,scopeType?:string }>()
   for (const r of allRoles.value) m.set(Number(r.id), r as any)
   return m
 })
 
 const roleLabel = (id: number) => {
   const r = roleMap.value.get(Number(id))
-  return r ? `${r.name}（${r.code}）` : String(id)
+  return r ? `${r.name}[${r.scopeType || ''}][${r.code}]` : String(id)
 }
 
 const refreshRoles = async () => {

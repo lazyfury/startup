@@ -2,6 +2,7 @@ package io.sf.admin.api;
 
 import io.sf.modules.auth.entity.User;
 import io.sf.modules.auth.repository.UserRepository;
+import io.sf.modules.auth.service.impl.UserService;
 import io.sf.config.security.jwt.JwtTokenService;
 import io.sf.utils.response.JsonResult;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,6 +33,7 @@ public class AdminAuthController {
     @Autowired
     private UserRepository userRepository;
 
+
     @Autowired
     private PasswordEncoder passwordEncoder;
 
@@ -47,6 +49,14 @@ public class AdminAuthController {
         String token = jwtTokenService.generateToken(username);
         io.sf.modules.auth.security.CustomUserDetail cud = (io.sf.modules.auth.security.CustomUserDetail) auth.getPrincipal();
         User user = cud.getUser();
+        if (!user.getIsStaff()) {
+            return new JsonResult<>(HttpStatus.FORBIDDEN, null);
+        }
+
+        if (!cud.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ROLE_STAFF"))) {
+            return new JsonResult<>(HttpStatus.FORBIDDEN, null);
+        }
+
         Map<String, Object> userInfo = new HashMap<>();
         userInfo.put("id", user.getId());
         userInfo.put("username", user.getUsername());

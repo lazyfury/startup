@@ -36,6 +36,9 @@ public class Role {
     @Column(name = "scope_id")
     private Long scopeId;
 
+    @Column(name = "hardcoded")
+    private Boolean hardcoded = Boolean.FALSE;
+
     @Column(name = "status", nullable = false)
     private Boolean status = Boolean.TRUE;
 
@@ -47,4 +50,3 @@ public class Role {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 }
-

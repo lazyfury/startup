@@ -108,7 +108,7 @@ public class UserService implements IUserService {
                     || (r.getScopeType() == ScopeType.TENANT && Objects.equals(r.getScopeId(), user.getTenantId()))
                     || (r.getScopeType() == ScopeType.MERCHANT && Objects.equals(r.getScopeId(), user.getMerchantId()));
             if (allowed) {
-                authorities.add(new SimpleGrantedAuthority("ROLE_" + r.getCode()));
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + r.getCode().toUpperCase()));
             }
         }
         Set<Long> permIds = new HashSet<>();
@@ -118,7 +118,7 @@ public class UserService implements IUserService {
         }
         List<Permission> perms = permIds.isEmpty() ? Collections.emptyList() : permissionRepository.findAllById(permIds);
         for (Permission p : perms) {
-            authorities.add(new SimpleGrantedAuthority("PERM_" + p.getCode()));
+            authorities.add(new SimpleGrantedAuthority("PERM_" + p.getCode().toUpperCase()));
         }
         return authorities;
     }
