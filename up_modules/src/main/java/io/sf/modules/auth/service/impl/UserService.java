@@ -184,6 +184,7 @@ public class UserService implements IUserService {
 
     @Override
     public void deleteUser(Long id) {
+        Objects.requireNonNull(id, "user id is required");
         if (!userRepository.existsById(id)) return;
         userRepository.deleteById(id);
     }

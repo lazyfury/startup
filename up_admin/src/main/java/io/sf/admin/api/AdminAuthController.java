@@ -2,7 +2,6 @@ package io.sf.admin.api;
 
 import io.sf.modules.auth.entity.User;
 import io.sf.modules.auth.repository.UserRepository;
-import io.sf.modules.auth.service.impl.UserService;
 import io.sf.config.security.jwt.JwtTokenService;
 import io.sf.utils.response.JsonResult;
 import io.swagger.v3.oas.annotations.Operation;

@@ -4,14 +4,7 @@ import io.sf.admin.api.dto.UserUpdateDto;
 import io.sf.modules.auth.entity.User;
 import io.sf.admin.api.dto.UserCreateDto;
 import io.sf.modules.auth.repository.UserRepository;
-import io.sf.modules.acl.repository.UserRoleRepository;
-import io.sf.modules.acl.entity.UserRole;
-import io.sf.modules.acl.service.RoleAssignService;
 import io.sf.modules.auth.service.impl.UserService;
-import io.sf.modules.tenant.entity.Tenant;
-import io.sf.modules.tenant.repository.TenantRepository;
-import io.sf.modules.merchant.entity.Merchant;
-import io.sf.modules.merchant.repository.MerchantRepository;
 import io.sf.utils.crud.EnhancedDynamicDSL;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 @RestController
