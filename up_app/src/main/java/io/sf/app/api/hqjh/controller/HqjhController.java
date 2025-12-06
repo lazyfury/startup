@@ -38,14 +38,15 @@ public class HqjhController {
     }
 
     @GetMapping("/jump")
-    public void jump(@RequestParam Optional<String> module, @RequestParam Long userId,@RequestParam Optional<String> showWay,@RequestParam Optional<String> rate,@RequestParam Optional<String> userCharge,HttpServletResponse response) throws Exception {
+    public void jump(@RequestParam Optional<String> module, @RequestParam Long userId,@RequestParam Optional<String> showWay,@RequestParam Optional<String> rate,@RequestParam Optional<String> userCharge,@RequestParam Optional<String> unit,HttpServletResponse response) throws Exception {
         var hqjhGetUrlRequest = new HqjhGetUrlRequest();
         
         hqjhGetUrlRequest.setModuleKey(module.orElse(""));
-        hqjhGetUrlRequest.setExchangeRate(rate.orElse("1"));
+        hqjhGetUrlRequest.setExchangeRate("1");
         hqjhGetUrlRequest.setUnitExchangeRate(rate.orElse("1"));
         hqjhGetUrlRequest.setChargeShowWay(showWay.orElse("0"));
         hqjhGetUrlRequest.setUserCharge(userCharge.orElse("0"));
+        hqjhGetUrlRequest.setUnit(unit.orElse(""));
 
         hqjhGetUrlRequest.fill(_hqjhGetUrlRequest);
         

@@ -57,7 +57,7 @@ public class HqjhApiClient {
 
     public HqjhClientResponse<HqjhClientResponse.GetUrlResponseData> getUrl(Long userId, HqjhGetUrlRequest request) throws IOException,StreamReadException,DatabindException {
         request.setMchUuidNo(properties.getMchNo());
-        request.setServiceUserKey(String.format("sk_local_test_%d",userId));
+        request.setServiceUserKey(String.format("%d",userId));
         var response = callApi("/h5/api/commonUrl", request.toMap());
         var result = new ObjectMapper().readValue(response, new TypeReference<HqjhClientResponse<HqjhClientResponse.GetUrlResponseData>>() {});
         return result;
